@@ -529,18 +529,24 @@ const WATZAP_CONFIG = {
 /* Google Sheets Web App URL — isi setelah Apps Script di-deploy */
 const SHEET_CONFIG = {
   enabled: true,
-  webAppUrl: "https://script.google.com/macros/s/AKfycbxdh5GOZ-Mm4HR7KPUqGJIEjTMXv7HpEirldCUM2waFfEbd89eut1nu9-VmKF25bw7Kzg/exec"
+  webAppUrl: "https://script.google.com/macros/s/AKfycbz76WXJPMEFved0am7iPO64A-n4jIG9YZmeCkfQVBripr2ISE9hcJbGE-7HavJc-5LsSw/exec"
 };
 
 function getAssessmentSummary(data, url){
   const n = (data.teeth || []).length;
-  const implantTotal = ((data.implantPrice || 0) + (data.crownPrice || 0)) * n + ((data.boneGraft && data.boneGraft.price) || 0);
+  const hargaImplant = Number(data.implantPrice || 0);
+  const hargaCrown = Number(data.crownPrice || 0);
+  const hargaBoneGraft = data.boneGraft ? Number(data.boneGraft.price || 0) : 0;
+  const subtotalPerGigi = hargaImplant + hargaCrown;
+  const totalTindakanUtama = (subtotalPerGigi * n) + hargaBoneGraft;
   const penunjangTotal = (data.penunjang || []).reduce((sum,item)=>sum + (Number(item.price)||0),0);
+
   return {
     jumlahGigi: n,
-    implantTotal,
+    subtotalPerGigi,
+    totalTindakanUtama,
     penunjangTotal,
-    grandTotal: implantTotal
+    grandTotal: totalTindakanUtama
   };
 }
 
@@ -740,8 +746,8 @@ function cleanPhoneForWA(raw){
   return phone;
 }
 
-async function sendWA(){
-  await generateLink();
+function sendWA(){
+  alert('Link sudah diproses otomatis setelah klik Generate.');
 }
 
 function previewPatient(){
@@ -905,39 +911,35 @@ async function sendWatZapMessage(phone, message){
 }
 
 async function sendAutoWA(data, url){
-  const patientPhone = cleanPhoneForWA(data.phone || '');
-  const clinicPhone = cleanPhoneForWA(data.clinicPhone || '');
-  const patientMsg = buildPatientMessage(data, url);
-  const clinicMsg = buildClinicMessage(data, url);
+  const summary = getAssessmentSummary(data, url);
 
   await saveToSpreadsheet({
-  tanggalPeriksa: data.date || '',
-  namaPasien: data.name || '',
-  usia: data.age || '',
-  noHp: data.phone || '',
-  klinik: data.clinic || '',
-  noKlinik: clinicPhone || '',
-  dokter: data.doctor || '',
-  jumlahGigi: (data.teeth || []).length,
-  daftarGigi: (data.teeth || []).join(', '),
-  pembayaran: data.payment || '',
-  brandImplant: data.implantName || '',
-  hargaImplant: data.implantPrice || '',
-  crown: data.crownName || '',
-  hargaCrown: data.crownPrice || '',
-  boneGraft: data.boneGraftName || '',
-  hargaBoneGraft: data.boneGraftPrice || '',
-  subtotalPerGigi: data.subtotalPerGigi || '',
-  totalTindakanUtama: data.totalUtama || '',
-  biayaPenunjangDetail: JSON.stringify(data.penunjang || []),
-  totalBiayaPenunjang: data.penunjangTotal || '',
-  grandTotal: data.total || '',
-  link: url || '',
-  catatan: data.note || ''
-});
+    tanggalPeriksa: data.date || '',
+    namaPasien: data.name || '',
+    usia: data.age || '',
+    noHp: data.phone || '',
+    klinik: data.clinicName || '',
+    noKlinik: data.clinicPhone || '',
+    dokter: data.doctor || '',
+    jumlahGigi: summary.jumlahGigi || '',
+    daftarGigi: (data.teeth || []).join(', '),
+    pembayaran: data.payType || '',
+    brandImplant: data.brand || '',
+    hargaImplant: data.implantPrice || '',
+    crown: data.crownName || '',
+    hargaCrown: data.crownPrice || '',
+    boneGraft: data.boneGraft ? data.boneGraft.name : '',
+    hargaBoneGraft: data.boneGraft ? data.boneGraft.price : '',
+    subtotalPerGigi: summary.subtotalPerGigi || '',
+    totalTindakanUtama: summary.totalTindakanUtama || '',
+    biayaPenunjangDetail: (data.penunjang || []).map(x => `${x.name}: Rp ${Number(x.price||0).toLocaleString('id-ID')}`).join(' | '),
+    totalBiayaPenunjang: summary.penunjangTotal || '',
+    grandTotal: summary.grandTotal || '',
+    link: url || '',
+    catatan: data.note || ''
+  });
 
-alert('Link berhasil dibuat, data masuk Spreadsheet, dan WA diproses via WatZap.');
-return;
+  alert('Data berhasil masuk Spreadsheet dan link pendek akan dikirim via WatZap.');
 }
 
 /* Override generateLink agar data klinik ikut tersimpan dan WA bisa dikirim */
@@ -970,7 +972,6 @@ function generateLink(){
   document.getElementById('link-display').textContent=url;
   document.getElementById('link-result').style.display='block';
   document.getElementById('link-result').scrollIntoView({behavior:'smooth',block:'nearest'});
-  saveAssessmentToSheet(data, url);
   sendAutoWA(data, url);
 }
 
