@@ -739,30 +739,11 @@ function cleanPhoneForWA(raw){
   if(phone.startsWith('8')) phone='62'+phone;
   return phone;
 }
-function sendWA(){
-  const linkBox=document.getElementById('link-result');
-  const linkDisplay=document.getElementById('link-display');
-  if(!linkDisplay || !linkDisplay.textContent || linkDisplay.textContent==='—'){
-    generateLink();
-  }
-  const phone=cleanPhoneForWA(document.getElementById('f-phone').value);
-  const name=(document.getElementById('f-name').value||'Pasien').trim();
-  const url=document.getElementById('link-display').textContent;
-  const message=[
-    'Halo '+name+',',
-    '',
-    'Berikut rencana perawatan ImplanKu dari Medikids Dental Specialist.',
-    '',
-    'Link assessment:',
-    url,
-    '',
-    'Silakan buka link tersebut untuk melihat kondisi gigi, prosedur, dan estimasi biaya.',
-    '',
-    'Terima kasih.'
-  ].join('\n');
-  const waUrl=(phone?'https://wa.me/'+phone:'https://wa.me/')+'?text='+encodeURIComponent(message);
-  window.open(waUrl,'_blank');
+
+async function sendWA(){
+  await generateLink();
 }
+
 function previewPatient(){
   const url=document.getElementById('link-display').textContent;
   const hash=url.split('#')[1];
