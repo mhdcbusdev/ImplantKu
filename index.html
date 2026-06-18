@@ -911,13 +911,29 @@ async function sendAutoWA(data, url){
   const clinicMsg = buildClinicMessage(data, url);
 
   await saveToSpreadsheet({
+  tanggalPeriksa: data.date || '',
   namaPasien: data.name || '',
+  usia: data.age || '',
   noHp: data.phone || '',
   klinik: data.clinic || '',
+  noKlinik: clinicPhone || '',
   dokter: data.doctor || '',
-  grandTotal: data.total || 0,
+  jumlahGigi: (data.teeth || []).length,
+  daftarGigi: (data.teeth || []).join(', '),
+  pembayaran: data.payment || '',
+  brandImplant: data.implantName || '',
+  hargaImplant: data.implantPrice || '',
+  crown: data.crownName || '',
+  hargaCrown: data.crownPrice || '',
+  boneGraft: data.boneGraftName || '',
+  hargaBoneGraft: data.boneGraftPrice || '',
+  subtotalPerGigi: data.subtotalPerGigi || '',
+  totalTindakanUtama: data.totalUtama || '',
+  biayaPenunjangDetail: JSON.stringify(data.penunjang || []),
+  totalBiayaPenunjang: data.penunjangTotal || '',
+  grandTotal: data.total || '',
   link: url || '',
-  noKlinik: clinicPhone || ''
+  catatan: data.note || ''
 });
 
 alert('Link berhasil dibuat, data masuk Spreadsheet, dan WA diproses via WatZap.');
