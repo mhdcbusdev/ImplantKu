@@ -929,17 +929,18 @@ async function sendAutoWA(data, url){
   const patientMsg = buildPatientMessage(data, url);
   const clinicMsg = buildClinicMessage(data, url);
 
-  if(WATZAP_CONFIG.enabled){
-    await sendWatZapMessage(patientPhone, patientMsg);
-    await sendWatZapMessage(clinicPhone, clinicMsg);
-    alert('Link berhasil dibuat dan WA dikirim ke pasien + klinik.');
-    return;
-  }
+  await saveToSpreadsheet({
+  namaPasien: data.name || '',
+  noHp: data.phone || '',
+  klinik: data.clinic || '',
+  dokter: data.doctor || '',
+  grandTotal: data.total || 0,
+  link: url || '',
+  noKlinik: clinicPhone || ''
+});
 
-  // Fallback selama WatZap belum aktif: buka WA manual 2 tab.
-  alert('WatZap belum aktif. Sistem akan membuka WhatsApp pasien dan klinik secara manual.');
-  if(patientPhone) window.open('https://wa.me/'+patientPhone+'?text='+encodeURIComponent(patientMsg),'_blank');
-  if(clinicPhone) setTimeout(()=>window.open('https://wa.me/'+clinicPhone+'?text='+encodeURIComponent(clinicMsg),'_blank'),700);
+alert('Link berhasil dibuat, data masuk Spreadsheet, dan WA diproses via WatZap.');
+return;
 }
 
 /* Override generateLink agar data klinik ikut tersimpan dan WA bisa dikirim */
@@ -990,6 +991,22 @@ function renderPatient(d){
   buildPatientCost(d);
   document.getElementById('ps-share-link').textContent=location.href;
   setAnim(0);
+}
+
+  async function saveToSpreadsheet(payload){
+  if(!SHEET_CONFIG.enabled || !SHEET_CONFIG.webAppUrl){
+    console.log('Spreadsheet belum aktif');
+    return;
+  }
+
+  await fetch(SHEET_CONFIG.webAppUrl, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
 }
 
 </script>
