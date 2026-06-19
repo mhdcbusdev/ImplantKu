@@ -870,12 +870,6 @@ async function sendWatZapMessage(phone, message){
   return { ok:response.ok, status:response.status };
 }
 
-async function sendAutoWA(data, url){
-  const patientPhone = cleanPhoneForWA(data.phone || '');
-  const clinicPhone = cleanPhoneForWA(data.clinicPhone || '');
-  const patientMsg = buildPatientMessage(data, url);
-  const clinicMsg = buildClinicMessage(data, url);
-
   const result = await saveAssessmentToSheet(data, url);
 
   if(result.ok){
@@ -916,7 +910,6 @@ function generateLink(){
   document.getElementById('link-display').textContent=url;
   document.getElementById('link-result').style.display='block';
   document.getElementById('link-result').scrollIntoView({behavior:'smooth',block:'nearest'});
-  sendAutoWA(data, url);
 }
 
 /* Override tampilan halaman pasien supaya nama klinik ikut muncul */
