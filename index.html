@@ -653,32 +653,6 @@ function calcTotal(){
   document.getElementById('grand-total').textContent=fmt(grand);
 }
 
-function generateLink(){
-  const name=document.getElementById('f-name').value.trim();
-  if(!name){alert('Masukkan nama pasien dulu ya.');return;}
-  const n=selTeeth.length;
-  const boneGraftPrice=getBoneGraft();
-  const boneGraftObj=getBoneGraftLabel();
-  const penunjang=getPenunjang();
-  const data={
-    name,age:document.getElementById('f-age').value,
-    doctor:document.getElementById('f-doctor').value,
-    date:document.getElementById('f-date').value,
-    phone:document.getElementById('f-phone').value,
-    teeth:selTeeth,
-    boneQ:document.querySelector('#bone-q .pill.on')?.textContent||'D2',
-    note:document.getElementById('f-note').value,
-    payType,brand:curBrand,implantPrice:curImplantPrice,
-    crownName:selCrownName,crownPrice:selCrownPrice,
-    boneGraft:boneGraftObj,
-    penunjang
-  };
-  const url=PATIENT_PAGE_URL+'#'+btoa(encodeURIComponent(JSON.stringify(data)));
-  document.getElementById('link-display').textContent=url;
-  document.getElementById('link-result').style.display='block';
-  document.getElementById('link-result').scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-
 function renderPatient(d){
   document.getElementById('ps-name').textContent=d.name||'Pasien';
   const ds=d.date?new Date(d.date).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'â€”';
