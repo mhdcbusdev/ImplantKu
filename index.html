@@ -536,7 +536,7 @@ function getAssessmentSummary(data, url){
     subtotalPerGigi,
     totalTindakanUtama,
     penunjangTotal,
-    grandTotal: totalTindakanUtama
+    grandTotal: totalTindakanUtama + penunjangTotal
   };
 }
 
@@ -976,7 +976,6 @@ function renderPatient(d){
   buildPatientTeeth(selTeeth);
   if(d.note){document.getElementById('ps-note').textContent='"'+d.note+'"';document.getElementById('ps-note-by').textContent='— '+(d.doctor||'—');document.getElementById('ps-note-wrap').style.display='block';}
   buildPatientCost(d);
-  document.getElementById('ps-share-link').textContent=location.href;
   setAnim(0);
 }
 
@@ -995,5 +994,21 @@ function renderPatient(d){
     body: JSON.stringify(payload)
   });
 }
+function openResultFromHash(){
+  const hash = location.hash ? location.hash.slice(1) : '';
 
+  if(!hash) return;
+
+  try{
+    const data = JSON.parse(decodeURIComponent(atob(hash)));
+    renderPatient(data);
+    showScreen('s-patient');
+  }catch(e){
+    console.error('Gagal membuka hasil estimasi:', e);
+    alert('Link hasil estimasi tidak bisa dibuka.');
+  }
+}
+
+window.addEventListener('load', openResultFromHash);
+window.addEventListener('hashchange', openResultFromHash);
 </script>
