@@ -467,6 +467,20 @@ const KLINIK_LIST = [
 { nama: "Medikids Surabaya", nomor: "628118825531" }
 ];
 
+  (function forceClinicDropdown(){
+  const select = document.getElementById('f-clinic');
+  if(!select) return;
+
+  select.innerHTML = '<option value="">Pilih klinik</option>';
+
+  KLINIK_LIST.forEach((klinik, index) => {
+    const option = document.createElement('option');
+    option.value = String(index);
+    option.textContent = klinik.nama;
+    select.appendChild(option);
+  });
+})();
+
 /* WatZap: jangan isi API key di file GitHub publik. Biarkan false dulu agar pakai WA manual. Auto WatZap sebaiknya lewat Apps Script/backend. */
 const WATZAP_CONFIG = {
   enabled: false,
