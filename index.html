@@ -519,8 +519,10 @@ const WATZAP_CONFIG = {
 /* Google Sheets Web App URL — isi setelah Apps Script di-deploy */
 const SHEET_CONFIG = {
   enabled: true,
-  webAppUrl: "https://script.google.com/macros/s/AKfycbw94TxQ0Nz8rjlWXxA5nDRx2fQe6tRI62tuFs3v94xIX2mHZu-iwpFCy2GFh-xEmhwW2g/exec"
+  webAppUrl: "https://script.google.com/macros/s/AKfycbxDreqMEnZi5ud5nT9-dZeeKdvrqek--BtTgK_JnlwZ8Vt7f9rTY3T4zEi2FSQmztCIuQ/exec"
 };
+
+const DATA_API_URL = SHEET_CONFIG.webAppUrl;
 
 function getAssessmentSummary(data, url){
   const n = (data.teeth || []).length;
@@ -1016,4 +1018,30 @@ function openResultFromHash(){
 
 window.addEventListener('load', openResultFromHash);
 window.addEventListener('hashchange', openResultFromHash);
+  
+async function openResultFromId(){
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+
+  if(!id) return;
+
+  try{
+    const response = await fetch(DATA_API_URL + '?id=' + encodeURIComponent(id));
+    const result = await response.json();
+
+    if(result.status !== 'success'){
+      alert('Data estimasi tidak ditemukan.');
+      return;
+    }
+
+    renderPatient(result.data);
+    showScreen('s-patient');
+  }catch(e){
+    console.error(e);
+    alert('Data estimasi gagal dibuka.');
+  }
+}
+
+window.addEventListener('load', openResultFromId);
+
 </script>
