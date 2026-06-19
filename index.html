@@ -481,7 +481,7 @@ const WATZAP_CONFIG = {
 /* Google Sheets Web App URL — isi setelah Apps Script di-deploy */
 const SHEET_CONFIG = {
   enabled: true,
-  webAppUrl: "https://script.google.com/macros/s/AKfycbyZm9lgiXqpHlaL39nQTR1KvJyt5vrg2qOltGamJyItT3WTVRuw0EBlLOc6IBqLZTmtPA/exec"
+  webAppUrl: "https://script.google.com/macros/s/AKfycbwxveQYFVVdJLkGjU-e76zqmcxyDtZolP6ijJC132m1jCWN0WrbvJIEyNjURdt0fHC1wg/exec"
 };
 
 const DATA_API_URL = SHEET_CONFIG.webAppUrl;
@@ -650,57 +650,45 @@ function calcTotal(){
 function generateLink(){
   const name=document.getElementById('f-name').value.trim();
   if(!name){alert('Masukkan nama pasien dulu ya.');return;}
+
+  // Ambil nilai dari form
   const n=selTeeth.length;
-  const boneGraftPrice=getBoneGraft();
   const boneGraftObj=getBoneGraftLabel();
   const penunjang=getPenunjang();
-  const data={
-    name,age:document.getElementById('f-age').value,
-    doctor:document.getElementById('f-doctor').value,
-    date:document.getElementById('f-date').value,
-    phone:document.getElementById('f-phone').value,
-    teeth:selTeeth,
-    boneQ:document.querySelector('#bone-q .pill.on')?.textContent||'D2',
-    note:document.getElementById('f-note').value,
-    payType,brand:curBrand,implantPrice:curImplantPrice,
-    crownName:selCrownName,crownPrice:selCrownPrice,
-    boneGraft:boneGraftObj,
-    penunjang
-  };
-  // Build Apps Script payload
+  const subtotalPerGigi=curImplantPrice+selCrownPrice;
+  const totalTindakanUtama=subtotalPerGigi*n+(boneGraftObj?boneGraftObj.price:0);
+  const penDetail=penunjang.map(p=>p.name+':'+(p.price||0)).join('|');
+
+  // Klinik dari KLINIK_LIST
   const klinikEl=document.getElementById('f-klinik');
   const klinikNama=klinikEl?klinikEl.value:'';
   const klinikNomor=(KLINIK_LIST.find(k=>k.nama===klinikNama)||{}).nomor||'';
-  const n=selTeeth.length;
-  const boneGraftObj=getBoneGraftLabel();
-  const subtotalPerGigi=curImplantPrice+selCrownPrice;
-  const totalTindakanUtama=subtotalPerGigi*n+(boneGraftObj?boneGraftObj.price:0);
-  const penDetail=getPenunjang().map(p=>p.name+':'+(p.price||0)).join('|');
 
+  // Payload sesuai field Apps Script doPost
   const payload={
-    tanggalPeriksa:   data.date,
-    namaPasien:       data.name,
-    usia:             data.age,
-    noHp:             data.phone,
-    klinik:           klinikNama,
-    noKlinik:         klinikNomor,
-    dokter:           data.doctor,
-    jumlahGigi:       n,
-    daftarGigi:       selTeeth.join(','),
-    pembayaran:       data.payType,
-    brandImplant:     data.brand,
-    hargaImplant:     data.implantPrice,
-    crown:            data.crownName,
-    hargaCrown:       data.crownPrice,
-    boneGraft:        boneGraftObj?boneGraftObj.name:'',
-    hargaBoneGraft:   boneGraftObj?boneGraftObj.price:0,
-    subtotalPerGigi:  subtotalPerGigi,
-    totalTindakanUtama: totalTindakanUtama,
+    tanggalPeriksa:       document.getElementById('f-date').value,
+    namaPasien:           name,
+    usia:                 document.getElementById('f-age').value,
+    noHp:                 document.getElementById('f-phone').value,
+    klinik:               klinikNama,
+    noKlinik:             klinikNomor,
+    dokter:               document.getElementById('f-doctor').value,
+    jumlahGigi:           n,
+    daftarGigi:           selTeeth.join(','),
+    pembayaran:           payType,
+    brandImplant:         curBrand,
+    hargaImplant:         curImplantPrice,
+    crown:                selCrownName,
+    hargaCrown:           selCrownPrice,
+    boneGraft:            boneGraftObj?boneGraftObj.name:'',
+    hargaBoneGraft:       boneGraftObj?boneGraftObj.price:0,
+    subtotalPerGigi:      subtotalPerGigi,
+    totalTindakanUtama:   totalTindakanUtama,
     biayaPenunjangDetail: penDetail,
-    totalBiayaPenunjang: 0,
-    grandTotal:       totalTindakanUtama,
-    catatan:          data.note,
-    link: ''
+    totalBiayaPenunjang:  0,
+    grandTotal:           totalTindakanUtama,
+    catatan:              document.getElementById('f-note').value,
+    link:                 '' // Apps Script pakai ini untuk cek duplikat
   };
 
   const btn=document.getElementById('btn-generate-el');
@@ -717,6 +705,8 @@ function generateLink(){
       document.getElementById('link-display').textContent=res.shortLink;
       document.getElementById('link-result').style.display='block';
       document.getElementById('link-result').scrollIntoView({behavior:'smooth',block:'nearest'});
+    } else if(res.status==='duplicate_skip'){
+      alert('Data pasien ini sudah pernah disimpan sebelumnya.');
     } else {
       alert('Gagal menyimpan: '+(res.message||'unknown error'));
     }
