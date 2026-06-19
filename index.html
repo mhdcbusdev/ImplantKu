@@ -411,11 +411,6 @@ textarea.finput{resize:none;line-height:1.6;}
   <div><p style="font-size:13px;font-weight:800;color:var(--text);">Link siap dikirim</p><p style="font-size:10px;color:var(--text3);margin-top:1px;">Pasien buka dari HP â€” langsung tampil semua info</p></div>
 </div>
 <div class="link-url" id="link-display"></div>
-<div class="btn-row">
-  <button class="btn-sm btn-copy" onclick="copyLink()">Salin</button>
-  <button class="btn-sm btn-wa" onclick="sendWA()">WhatsApp</button>
-  <button class="btn-sm btn-preview" onclick="previewPatient()">Preview</button>
-</div>
 </div></div></div>
 </div>
 <script>
@@ -684,34 +679,6 @@ function generateLink(){
   document.getElementById('link-result').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function copyLink(){
-  const el=document.getElementById('link-display');
-  const txt=el?el.textContent:'';
-  navigator.clipboard.writeText(txt).catch(()=>{});
-  if(window.event && window.event.target){
-    const old=window.event.target.textContent;
-    window.event.target.textContent='âœ“ Disalin!';
-    setTimeout(()=>window.event.target.textContent=old||'Salin',1800);
-  }
-}
-function cleanPhoneForWA(raw){
-  let phone=(raw||'').replace(/\D/g,'');
-  if(phone.startsWith('0')) phone='62'+phone.slice(1);
-  if(phone.startsWith('8')) phone='62'+phone;
-  return phone;
-}
-
-async function sendWA(){
-  await generateLink();
-}
-
-function previewPatient(){
-  const url=document.getElementById('link-display').textContent;
-  const hash=url.split('#')[1];
-  try{renderPatient(JSON.parse(decodeURIComponent(atob(hash))));showScreen('s-patient');}
-  catch(e){alert('Error: '+e);}
-}
-
 function renderPatient(d){
   document.getElementById('ps-name').textContent=d.name||'Pasien';
   const ds=d.date?new Date(d.date).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'â€”';
@@ -818,46 +785,6 @@ function getSelectedClinic(){
   return KLINIK_LIST[Number(idx)];
 }
 
-function buildPatientMessage(data, url){
-  return [
-    'Halo '+(data.name || 'Kak')+',',
-    '',
-    'Terima kasih sudah melakukan assessment ImplanKu di '+(data.clinicName || 'Medikids')+'.',
-    '',
-    'Berikut link rencana perawatan implant gigi Anda:',
-    url,
-    '',
-    'Silakan buka link tersebut untuk melihat kondisi gigi, tahapan prosedur, dan estimasi biaya.',
-    '',
-    'Terima kasih.'
-  ].join('\n');
-}
-
-function buildClinicMessage(data, url){
-  return [
-    'Halo Tim '+(data.clinicName || 'Klinik')+',',
-    '',
-    'Ada data assessment ImplanKu baru.',
-    '',
-    'Nama pasien: '+(data.name || '-'),
-    'No HP: '+(data.phone || '-'),
-    'Dokter: '+(data.doctor || '-'),
-    'Tanggal: '+(data.date || '-'),
-    'Gigi implant: '+((data.teeth || []).join(', ') || '-'),
-    'Brand: '+(data.brand || '-'),
-    '',
-    'Link assessment:',
-    url,
-    '',
-    'Mohon dibantu follow up pasien. Terima kasih.'
-  ].join('\n');
-}
-
-async function sendWatZapMessage(phone, message){
-  if(!WATZAP_CONFIG.enabled || !WATZAP_CONFIG.apiUrl || WATZAP_CONFIG.apiUrl.includes('PASTE_')){
-    return { ok:false, reason:'WatZap belum disetting' };
-  }
-
   // Format payload ini nanti bisa disesuaikan dengan dokumentasi WatZap MHDC.
   const response = await fetch(WATZAP_CONFIG.apiUrl, {
     method:'POST',
@@ -942,13 +869,6 @@ function renderPatient(d){
     },
     body: JSON.stringify(payload)
   });
-}
-
-/* Split page override: preview dibuka di halaman pasien terpisah */
-function previewPatient(){
-  const url=document.getElementById('link-display') ? document.getElementById('link-display').textContent : '';
-  if(!url){ alert('Generate link dulu ya.'); return; }
-  window.open(url, '_blank');
 }
 
 </script>
