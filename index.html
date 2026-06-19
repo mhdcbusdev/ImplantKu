@@ -783,16 +783,21 @@ function shareWA(){
 ===================================================== */
 function initClinicDropdown(){
   const select = document.getElementById('f-clinic');
-  if(!select || select.dataset.loaded === '1') return;
+  if(!select) return;
+
+  select.innerHTML = '<option value="">Pilih klinik</option>';
+
   KLINIK_LIST.forEach((klinik, index) => {
     const option = document.createElement('option');
     option.value = String(index);
     option.textContent = klinik.nama;
     select.appendChild(option);
   });
-  select.dataset.loaded = '1';
 }
-initClinicDropdown();
+
+document.addEventListener('DOMContentLoaded', initClinicDropdown);
+window.addEventListener('load', initClinicDropdown);
+setTimeout(initClinicDropdown, 500);
 
 function getSelectedClinic(){
   const select = document.getElementById('f-clinic');
