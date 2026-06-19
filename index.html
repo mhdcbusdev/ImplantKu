@@ -511,7 +511,7 @@ async function saveAssessmentToSheet(data, url){
   if(!SHEET_CONFIG.enabled || !SHEET_CONFIG.webAppUrl || SHEET_CONFIG.webAppUrl.includes('PASTE_')){
     return { ok:false, reason:'Google Sheet belum disetting' };
   }
-
+  
   const summary = getAssessmentSummary(data, url);
   const payload = {
     timestamp: new Date().toISOString(),
@@ -938,7 +938,6 @@ function generateLink(){
   document.getElementById('link-display').textContent=url;
   document.getElementById('link-result').style.display='block';
   document.getElementById('link-result').scrollIntoView({behavior:'smooth',block:'nearest'});
-  saveAssessmentToSheet(data, url);
   sendAutoWA(data, url);
 }
 
@@ -968,12 +967,11 @@ function renderPatient(d){
     method: 'POST',
     mode: 'no-cors',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'text/plain;charset=utf-8'
     },
     body: JSON.stringify(payload)
   });
 }
-
 
 /* Split page override: preview dibuka di halaman pasien terpisah */
 function previewPatient(){
