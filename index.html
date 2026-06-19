@@ -996,16 +996,21 @@ function renderPatient(d){
 }
 function openResultFromHash(){
   const hash = location.hash ? location.hash.slice(1) : '';
-
   if(!hash) return;
 
   try{
-    const data = JSON.parse(decodeURIComponent(atob(hash)));
+    let decoded = atob(hash);
+
+    try {
+      decoded = decodeURIComponent(decoded);
+    } catch(err) {}
+
+    const data = JSON.parse(decoded);
     renderPatient(data);
     showScreen('s-patient');
   }catch(e){
-    console.error('Gagal membuka hasil estimasi:', e);
-    alert('Link hasil estimasi tidak bisa dibuka.');
+    console.error(e);
+    alert('Link hasil estimasi tidak bisa dibuka. Error: ' + e.message);
   }
 }
 
