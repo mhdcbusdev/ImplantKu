@@ -722,7 +722,7 @@ function buildPatientCost(d){
     breakEl.appendChild(row);
   });
 
-  // Penunjang
+  // Penunjang — tampil terpisah, TIDAK termasuk grand total (sebagai FYI/referensi)
   const penSec=document.getElementById('ps-penunjang-section');
   const penList=document.getElementById('ps-penunjang-list');
   if(penunjang.length>0 && penunjangTotal>0){
@@ -733,6 +733,17 @@ function buildPatientCost(d){
       row.innerHTML=`<span class="ps-extra-name">${e.name}</span><span class="ps-extra-price">${fmt(e.price)}</span>`;
       penList.appendChild(row);
     });
+    // Baris subtotal penunjang
+    const totalRow=document.createElement('div');
+    totalRow.className='ps-extra-item';
+    totalRow.style.cssText='margin-top:6px;padding-top:8px;border-top:.5px solid var(--border);font-weight:800;';
+    totalRow.innerHTML=`<span class="ps-extra-name" style="font-weight:800;">Total Estimasi Penunjang</span><span class="ps-extra-price" style="font-weight:800;">${fmt(penunjangTotal)}</span>`;
+    penList.appendChild(totalRow);
+    // Keterangan bahwa ini terpisah dari grand total
+    const note=document.createElement('p');
+    note.style.cssText='font-size:10px;color:var(--text3);margin-top:8px;line-height:1.5;';
+    note.textContent='Biaya penunjang ini bersifat estimasi/referensi dan TIDAK termasuk dalam Grand Total estimasi di atas.';
+    penList.appendChild(note);
     penSec.style.display='block';
   } else {
     penSec.style.display='none';
