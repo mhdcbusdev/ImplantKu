@@ -403,6 +403,9 @@ const SHEET_CONFIG = {
   webAppUrl: "https://script.google.com/macros/s/AKfycbzxDZpC_elOKbjq6XwAmvwZXlnHUDsar5bKLEG9KvcO/dev"
 };
 
+/* Halaman ini hanya untuk pasien (read-only). PATIENT_PAGE_URL didefinisikan agar tidak error. */
+const PATIENT_PAGE_URL = "https://mhdcbusdev.github.io/ImplantKu/pasien.html";
+
 function getAssessmentSummary(data, url){
   const n = (data.teeth || []).length;
   const implantTotal = ((data.implantPrice || 0) + (data.crownPrice || 0)) * n + ((data.boneGraft && data.boneGraft.price) || 0);
@@ -644,6 +647,7 @@ function buildPatientCost(d){
   const boneGraft=d.boneGraft?d.boneGraft.price:0;
   const implantTotal=implant+crown+boneGraft;
   const penunjang=d.penunjang||[];
+  const penunjangTotal=penunjang.reduce((s,e)=>s+(Number(e.price)||0),0);
   const grand=implantTotal; // penunjang tidak masuk grand total
 
   // Implant breakdown
