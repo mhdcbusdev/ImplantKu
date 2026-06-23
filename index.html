@@ -490,6 +490,9 @@ const SHEET_CONFIG = {
   webAppUrl: "https://script.google.com/macros/s/AKfycbyaYFC4Qbpm2ThjGv5euPbEBVBv5MyutUp7DT2mW-i41VNHt3Y6DulpZojbBvLUFUTlvg/exec"
 };
 
+/* URL halaman pasien (read-only). GANTI sesuai lokasi pasien.html di GitHub Pages kamu. */
+const PATIENT_PAGE_URL = "https://mhdcbusdev.github.io/ImplantKu/pasien.html";
+
 function getAssessmentSummary(data, url){
   const n = (data.teeth || []).length;
   const implantTotal = ((data.implantPrice || 0) + (data.crownPrice || 0)) * n + ((data.boneGraft && data.boneGraft.price) || 0);
@@ -508,28 +511,30 @@ async function saveAssessmentToSheet(data, url){
   }
   
   const summary = getAssessmentSummary(data, url);
+  // PENTING: nama field di bawah HARUS sama persis dengan yang dibaca Code.gs (doPost).
   const payload = {
-    timestamp: new Date().toISOString(),
+    tanggalPeriksa: data.date || '',
     namaPasien: data.name || '',
     usia: data.age || '',
-    noHpPasien: data.phone || '',
-    dokter: data.doctor || '',
-    tanggal: data.date || '',
+    noHp: data.phone || '',
     klinik: data.clinicName || '',
-    noHpKlinik: data.clinicPhone || '',
-    tipePembayaran: data.payType || '',
+    noKlinik: data.clinicPhone || '',
+    dokter: data.doctor || '',
+    jumlahGigi: summary.jumlahGigi,
+    daftarGigi: (data.teeth || []).join(', '),
+    pembayaran: data.payType || '',
     brandImplant: data.brand || '',
     hargaImplant: data.implantPrice || 0,
     crown: data.crownName || '',
     hargaCrown: data.crownPrice || 0,
-    nomorGigi: (data.teeth || []).join(', '),
-    jumlahGigi: summary.jumlahGigi,
-    kualitasTulang: data.boneQ || '',
-    boneGraft: data.boneGraft ? data.boneGraft.label : '',
+    boneGraft: data.boneGraft ? data.boneGraft.name : '',
     hargaBoneGraft: data.boneGraft ? data.boneGraft.price : 0,
-    biayaPenunjang: (data.penunjang || []).map(x => `${x.name}: Rp ${Number(x.price||0).toLocaleString('id-ID')}`).join(' | '),
-    totalEstimasi: summary.grandTotal,
-    catatanDokter: data.note || '',
+    subtotalPerGigi: (data.implantPrice || 0) + (data.crownPrice || 0),
+    totalTindakanUtama: summary.implantTotal,
+    biayaPenunjangDetail: (data.penunjang || []).map(x => `${x.name}: ${Number(x.price||0)}`).join(' | '),
+    totalBiayaPenunjang: summary.penunjangTotal,
+    grandTotal: summary.grandTotal,
+    catatan: data.note || '',
     link: url
   };
 
@@ -674,6 +679,7 @@ function buildPatientCost(d){
   const boneGraft=d.boneGraft?d.boneGraft.price:0;
   const implantTotal=implant+crown+boneGraft;
   const penunjang=d.penunjang||[];
+  const penunjangTotal=penunjang.reduce((s,e)=>s+(Number(e.price)||0),0);
   const grand=implantTotal; // penunjang tidak masuk grand total
 
   // Implant breakdown
@@ -759,28 +765,6 @@ function getSelectedClinic(){
   return KLINIK_LIST[Number(idx)];
 }
 
-  // Format payload ini nanti bisa disesuaikan dengan dokumentasi WatZap MHDC.
-  const response = await fetch(WATZAP_CONFIG.apiUrl, {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':'Bearer '+WATZAP_CONFIG.apiKey
-    },
-    body:JSON.stringify({ phone, message })
-  });
-  return { ok:response.ok, status:response.status };
-}
-
-  const result = await saveAssessmentToSheet(data, url);
-
-  if(result.ok){
-    alert('Link berhasil dibuat dan data berhasil masuk Spreadsheet.');
-  } else {
-    alert('Link berhasil dibuat, tapi data gagal masuk Spreadsheet: ' + result.reason);
-  }
-
-  return;
-}
 /* Override generateLink agar data klinik ikut tersimpan dan WA bisa dikirim */
 function generateLink(){
   const name=document.getElementById('f-name').value.trim();
@@ -811,6 +795,14 @@ function generateLink(){
   document.getElementById('link-display').textContent=url;
   document.getElementById('link-result').style.display='block';
   document.getElementById('link-result').scrollIntoView({behavior:'smooth',block:'nearest'});
+
+  // Simpan ke Spreadsheet. Code.gs (doPost) yang akan kirim WA ke pasien & klinik via WatZap.
+  // Pakai mode no-cors, jadi kita tidak bisa baca response-nya; cukup beri info ke user.
+  saveAssessmentToSheet(data, url).then(function(){
+    console.log('Data dikirim ke Spreadsheet.');
+  }).catch(function(err){
+    console.error('Gagal kirim ke Spreadsheet:', err);
+  });
 }
 
 /* Override tampilan halaman pasien supaya nama klinik ikut muncul */
