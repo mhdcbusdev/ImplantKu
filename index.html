@@ -411,7 +411,9 @@ textarea.finput{resize:none;line-height:1.6;}
   <div><p style="font-size:13px;font-weight:800;color:var(--text);">Link siap dikirim</p><p style="font-size:10px;color:var(--text3);margin-top:1px;">Pasien buka dari HP — langsung tampil semua info</p></div>
 </div>
 <div class="link-url" id="link-display"></div>
-<button onclick="openPreview()" style="margin-top:10px;width:100%;padding:11px 14px;border:none;border-radius:10px;background:var(--navy);color:#fff;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">👁️ Lihat Preview (cek dulu sebelum kirim)</button>
+<button onclick="openPreview()" style="margin-top:10px;width:100%;padding:11px 14px;border:none;border-radius:10px;background:var(--navy);color:#fff;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">👁️ Preview</button>
+<button id="btn-kirim-wa" onclick="kirimWA()" style="margin-top:8px;width:100%;padding:12px 14px;border:none;border-radius:10px;background:var(--red);color:#fff;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">📤 Kirim ke WA Pasien & Klinik</button>
+<p style="font-size:10px;color:var(--text3);margin-top:8px;text-align:center;">Cek lewat Preview dulu, baru klik Kirim.</p>
 </div></div></div>
 </div>
 <script>
@@ -793,13 +795,16 @@ function generateLink(){
     penunjang
   };
   const url=PATIENT_PAGE_URL+'#'+btoa(encodeURIComponent(JSON.stringify(data)));
-  window.LAST_PREVIEW_URL = url; // simpan untuk tombol Preview
+  window.LAST_PREVIEW_URL = url;       // simpan untuk tombol Preview
+  window.LAST_DATA = data;             // simpan untuk tombol Kirim
+  window.LAST_SENT = false;            // tandai: WA belum dikirim
   document.getElementById('link-display').textContent=url;
   document.getElementById('link-result').style.display='block';
   document.getElementById('link-result').scrollIntoView({behavior:'smooth',block:'nearest'});
 
-  // Simpan ke Spreadsheet. Code.gs (doPost) yang akan kirim WA ke pasien & klinik via WatZap.
-  saveAssessmentToSheet(data, url);
+  // CATATAN: WA TIDAK dikirim di sini. Pengiriman hanya saat tombol "Kirim ke WA" diklik.
+  var _kirim = document.getElementById('btn-kirim-wa');
+  if(_kirim){ _kirim.disabled = false; _kirim.textContent = '📤 Kirim ke WA Pasien & Klinik'; }
 }
 
 /* Buka preview halaman pasien di tab baru, pakai data yang baru diisi (format #). */
@@ -809,6 +814,28 @@ function openPreview(){
     return;
   }
   window.open(window.LAST_PREVIEW_URL, '_blank');
+}
+
+/* Kirim WA ke pasien & klinik (baru jalan saat tombol Kirim diklik). */
+async function kirimWA(){
+  if(!window.LAST_DATA || !window.LAST_PREVIEW_URL){
+    alert('Generate link dulu ya sebelum kirim.');
+    return;
+  }
+  if(window.LAST_SENT){
+    if(!confirm('Estimasi ini sudah pernah dikirim. Kirim lagi?')) return;
+  }
+  var btn = document.getElementById('btn-kirim-wa');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Mengirim...'; }
+  try{
+    await saveAssessmentToSheet(window.LAST_DATA, window.LAST_PREVIEW_URL);
+    window.LAST_SENT = true;
+    if(btn){ btn.textContent = '✅ Terkirim'; }
+    alert('Estimasi sudah dikirim ke WA pasien & klinik.');
+  }catch(err){
+    if(btn){ btn.disabled = false; btn.textContent = '📤 Kirim ke WA Pasien & Klinik'; }
+    alert('Gagal mengirim: '+(err && err.message ? err.message : err));
+  }
 }
 
 /* Override tampilan halaman pasien supaya nama klinik ikut muncul */
