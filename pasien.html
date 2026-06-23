@@ -341,6 +341,17 @@ textarea.finput{resize:none;line-height:1.6;}
 
 </div>
 <script>
+  /* === FIX TAMPILAN HP: pastikan ada viewport meta tag === */
+(function ensureViewport(){
+  try{
+    if(!document.querySelector('meta[name="viewport"]')){
+      var m=document.createElement('meta');
+      m.name='viewport';
+      m.content='width=device-width, initial-scale=1, viewport-fit=cover';
+      (document.head||document.getElementsByTagName('head')[0]||document.documentElement).appendChild(m);
+    }
+  }catch(e){}
+})();
 /* =====================================================
    CONFIG KLINIK — edit bagian ini saja kalau tambah klinik
    Nomor wajib format 62xxxxxxxxxx tanpa +, spasi, atau strip.
