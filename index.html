@@ -411,11 +411,6 @@ textarea.finput{resize:none;line-height:1.6;}
   <div><p style="font-size:13px;font-weight:800;color:var(--text);">Link siap dikirim</p><p style="font-size:10px;color:var(--text3);margin-top:1px;">Pasien buka dari HP â€” langsung tampil semua info</p></div>
 </div>
 <div class="link-url" id="link-display"></div>
-<div id="status-box" style="margin-top:10px;font-size:11px;font-weight:600;border-radius:8px;padding:9px 11px;display:none;"></div>
-<div style="display:flex;gap:8px;margin-top:10px;">
-  <button onclick="copyLink()" style="flex:1;padding:10px;border-radius:8px;background:var(--bg3);border:.5px solid var(--border2);color:var(--text2);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;">ðŸ”— Salin Link</button>
-  <button onclick="previewPatient()" style="flex:1;padding:10px;border-radius:8px;background:var(--navy);border:none;color:#fff;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;">ðŸ‘ Preview Halaman Pasien</button>
-</div>
 </div></div></div>
 </div>
 <script>
@@ -492,11 +487,8 @@ const WATZAP_CONFIG = {
 /* Google Sheets Web App URL â€” isi setelah Apps Script di-deploy */
 const SHEET_CONFIG = {
   enabled: true,
-  webAppUrl: "https://script.google.com/macros/s/AKfycbwkuXu06JePC-uSQvXVzYKJE-JzHnJK-v8VwE_BtDWIyfBSXrn8JzaVL0EYTqJfC8PJnA/exec"
+  webAppUrl: "https://script.google.com/macros/s/AKfycbyaYFC4Qbpm2ThjGv5euPbEBVBv5MyutUp7DT2mW-i41VNHt3Y6DulpZojbBvLUFUTlvg/exec"
 };
-
-/* URL halaman pasien (read-only). GANTI sesuai lokasi pasien.html di GitHub Pages kamu. */
-const PATIENT_PAGE_URL = "https://mhdcbusdev.github.io/ImplantKu/pasien.html";
 
 function getAssessmentSummary(data, url){
   const n = (data.teeth || []).length;
@@ -516,44 +508,39 @@ async function saveAssessmentToSheet(data, url){
   }
   
   const summary = getAssessmentSummary(data, url);
-  // PENTING: nama field di bawah HARUS sama persis dengan yang dibaca Code.gs (doPost).
   const payload = {
-    tanggalPeriksa: data.date || '',
+    timestamp: new Date().toISOString(),
     namaPasien: data.name || '',
     usia: data.age || '',
-    noHp: data.phone || '',
-    klinik: data.clinicName || '',
-    noKlinik: data.clinicPhone || '',
+    noHpPasien: data.phone || '',
     dokter: data.doctor || '',
-    jumlahGigi: summary.jumlahGigi,
-    daftarGigi: (data.teeth || []).join(', '),
-    pembayaran: data.payType || '',
+    tanggal: data.date || '',
+    klinik: data.clinicName || '',
+    noHpKlinik: data.clinicPhone || '',
+    tipePembayaran: data.payType || '',
     brandImplant: data.brand || '',
     hargaImplant: data.implantPrice || 0,
     crown: data.crownName || '',
     hargaCrown: data.crownPrice || 0,
-    boneGraft: data.boneGraft ? data.boneGraft.name : '',
+    nomorGigi: (data.teeth || []).join(', '),
+    jumlahGigi: summary.jumlahGigi,
+    kualitasTulang: data.boneQ || '',
+    boneGraft: data.boneGraft ? data.boneGraft.label : '',
     hargaBoneGraft: data.boneGraft ? data.boneGraft.price : 0,
-    subtotalPerGigi: (data.implantPrice || 0) + (data.crownPrice || 0),
-    totalTindakanUtama: summary.implantTotal,
-    biayaPenunjangDetail: (data.penunjang || []).map(x => `${x.name}: ${Number(x.price||0)}`).join(' | '),
-    totalBiayaPenunjang: summary.penunjangTotal,
-    grandTotal: summary.grandTotal,
-    catatan: data.note || '',
+    biayaPenunjang: (data.penunjang || []).map(x => `${x.name}: Rp ${Number(x.price||0).toLocaleString('id-ID')}`).join(' | '),
+    totalEstimasi: summary.grandTotal,
+    catatanDokter: data.note || '',
     link: url
   };
 
   try{
     const response = await fetch(SHEET_CONFIG.webAppUrl, {
       method:'POST',
+      mode:'no-cors',
       headers:{ 'Content-Type':'text/plain;charset=utf-8' },
       body:JSON.stringify(payload)
     });
-    const result = await response.json();
-    if(result.status === 'success' || result.status === 'duplicate_skip'){
-      return { ok:true, waPasien:result.waPasien, waKlinik:result.waKlinik, id:result.id };
-    }
-    return { ok:false, reason:result.message || 'Respon tidak dikenal' };
+    return { ok:true };
   }catch(err){
     console.error('Gagal simpan ke Google Sheet:', err);
     return { ok:false, reason:err.message };
@@ -687,7 +674,6 @@ function buildPatientCost(d){
   const boneGraft=d.boneGraft?d.boneGraft.price:0;
   const implantTotal=implant+crown+boneGraft;
   const penunjang=d.penunjang||[];
-  const penunjangTotal=penunjang.reduce((s,e)=>s+(Number(e.price)||0),0);
   const grand=implantTotal; // penunjang tidak masuk grand total
 
   // Implant breakdown
@@ -773,28 +759,30 @@ function getSelectedClinic(){
   return KLINIK_LIST[Number(idx)];
 }
 
-/* Override generateLink agar data klinik ikut tersimpan dan WA bisa dikirim */
-let lastGeneratedData = null;
-let lastGeneratedUrl = '';
-
-function showStatus(type, msg){
-  const box = document.getElementById('status-box');
-  if(!box) return;
-  const styles = {
-    loading: {bg:'#EEF4FF', border:'rgba(20,30,90,.2)', color:'#141E5A'},
-    success: {bg:'#E9F7EF', border:'rgba(30,150,90,.3)', color:'#1B7A45'},
-    error:   {bg:'#FDECEC', border:'rgba(200,40,40,.25)', color:'#C4262F'}
-  };
-  const s = styles[type] || styles.loading;
-  box.style.display = 'block';
-  box.style.background = s.bg;
-  box.style.borderColor = s.border;
-  box.style.border = '.5px solid ' + s.border;
-  box.style.color = s.color;
-  box.innerHTML = msg;
+  // Format payload ini nanti bisa disesuaikan dengan dokumentasi WatZap MHDC.
+  const response = await fetch(WATZAP_CONFIG.apiUrl, {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer '+WATZAP_CONFIG.apiKey
+    },
+    body:JSON.stringify({ phone, message })
+  });
+  return { ok:response.ok, status:response.status };
 }
 
-async function generateLink(){
+  const result = await saveAssessmentToSheet(data, url);
+
+  if(result.ok){
+    alert('Link berhasil dibuat dan data berhasil masuk Spreadsheet.');
+  } else {
+    alert('Link berhasil dibuat, tapi data gagal masuk Spreadsheet: ' + result.reason);
+  }
+
+  return;
+}
+/* Override generateLink agar data klinik ikut tersimpan dan WA bisa dikirim */
+function generateLink(){
   const name=document.getElementById('f-name').value.trim();
   if(!name){alert('Masukkan nama pasien dulu ya.');return;}
   const clinic = getSelectedClinic();
@@ -820,45 +808,10 @@ async function generateLink(){
     penunjang
   };
   const url=PATIENT_PAGE_URL+'#'+btoa(encodeURIComponent(JSON.stringify(data)));
-  lastGeneratedData = data;
-  lastGeneratedUrl = url;
   document.getElementById('link-display').textContent=url;
   document.getElementById('link-result').style.display='block';
   document.getElementById('link-result').scrollIntoView({behavior:'smooth',block:'nearest'});
-
-  // Simpan ke Spreadsheet. Code.gs (doPost) yang juga kirim WA ke pasien & klinik via WatZap.
-  showStatus('loading', 'â³ Menyimpan ke Spreadsheet & mengirim WhatsApp...');
-  const result = await saveAssessmentToSheet(data, url);
-  if(result.ok){
-    let waInfo = '';
-    if(result.waPasien !== undefined || result.waKlinik !== undefined){
-      const p = result.waPasien ? 'âœ“ pasien' : 'âœ— pasien';
-      const k = result.waKlinik ? 'âœ“ klinik' : 'âœ— klinik';
-      waInfo = '<br>WhatsApp: ' + p + ' Â· ' + k;
-    }
-    showStatus('success', 'âœ… Data berhasil masuk Spreadsheet.' + waInfo);
-  } else {
-    showStatus('error', 'âš ï¸ Gagal menyimpan ke Spreadsheet: ' + (result.reason || 'tidak diketahui') + '<br><span style="font-weight:500;">Link tetap bisa disalin & dikirim manual.</span>');
-  }
 }
-
-function copyLink(){
-  const txt = document.getElementById('link-display').textContent || '';
-  navigator.clipboard.writeText(txt).then(function(){
-    if(window.event && window.event.target){
-      const btn = window.event.target;
-      const old = btn.textContent;
-      btn.textContent = 'âœ“ Tersalin!';
-      setTimeout(function(){ btn.textContent = old; }, 1800);
-    }
-  }).catch(function(){ alert('Tidak bisa menyalin otomatis. Salin manual ya.'); });
-}
-
-function previewPatient(){
-  if(!lastGeneratedUrl){ alert('Generate link dulu ya.'); return; }
-  window.open(lastGeneratedUrl, '_blank');
-}
-
 
 /* Override tampilan halaman pasien supaya nama klinik ikut muncul */
 function renderPatient(d){
