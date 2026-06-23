@@ -411,6 +411,7 @@ textarea.finput{resize:none;line-height:1.6;}
   <div><p style="font-size:13px;font-weight:800;color:var(--text);">Link siap dikirim</p><p style="font-size:10px;color:var(--text3);margin-top:1px;">Pasien buka dari HP — langsung tampil semua info</p></div>
 </div>
 <div class="link-url" id="link-display"></div>
+<button onclick="openPreview()" style="margin-top:10px;width:100%;padding:11px 14px;border:none;border-radius:10px;background:var(--navy);color:#fff;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">👁️ Lihat Preview (cek dulu sebelum kirim)</button>
 </div></div></div>
 </div>
 <script>
@@ -487,7 +488,7 @@ const WATZAP_CONFIG = {
 /* Google Sheets Web App URL — isi setelah Apps Script di-deploy */
 const SHEET_CONFIG = {
   enabled: true,
-  webAppUrl: "https://script.google.com/macros/s/AKfycbw8F-xDvAPFRxNtXAu8GB5Py_hwFRSOnqKmpoIwySbOTPsgSocGnsmFkDFgrlCtDaIrZQ/exec"
+  webAppUrl: "https://script.google.com/macros/s/AKfycbxdh5GOZ-Mm4HR7KPUqGJIEjTMXv7HpEirldCUM2waFfEbd89eut1nu9-VmKF25bw7Kzg/exec"
 };
 
 /* URL halaman pasien (read-only). GANTI sesuai lokasi pasien.html di GitHub Pages kamu. */
@@ -792,12 +793,22 @@ function generateLink(){
     penunjang
   };
   const url=PATIENT_PAGE_URL+'#'+btoa(encodeURIComponent(JSON.stringify(data)));
+  window.LAST_PREVIEW_URL = url; // simpan untuk tombol Preview
   document.getElementById('link-display').textContent=url;
   document.getElementById('link-result').style.display='block';
   document.getElementById('link-result').scrollIntoView({behavior:'smooth',block:'nearest'});
 
   // Simpan ke Spreadsheet. Code.gs (doPost) yang akan kirim WA ke pasien & klinik via WatZap.
   saveAssessmentToSheet(data, url);
+}
+
+/* Buka preview halaman pasien di tab baru, pakai data yang baru diisi (format #). */
+function openPreview(){
+  if(!window.LAST_PREVIEW_URL){
+    alert('Generate link dulu ya sebelum lihat preview.');
+    return;
+  }
+  window.open(window.LAST_PREVIEW_URL, '_blank');
 }
 
 /* Override tampilan halaman pasien supaya nama klinik ikut muncul */
