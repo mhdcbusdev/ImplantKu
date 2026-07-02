@@ -569,11 +569,23 @@ async function loadFromSheetById(id){
       showScreen('s-patient');
     } else {
       console.error('Data tidak ditemukan untuk ID:', id, json);
-      alert('Maaf, data estimasi tidak ditemukan. Silakan hubungi klinik.');
+      tryRenderFromHash();
     }
   }catch(e){
     console.error('Gagal mengambil data dari spreadsheet:', e);
-    alert('Gagal memuat data estimasi. Periksa koneksi internet Anda lalu coba lagi.');
+    tryRenderFromHash();
+  }
+}
+
+// Fallback tanpa popup: coba baca data dari hash (#) bila ada, kalau tidak diam saja.
+function tryRenderFromHash(){
+  const hash = location.hash.slice(1);
+  if(!hash) return;
+  try{
+    renderPatient(JSON.parse(decodeURIComponent(atob(hash))));
+    showScreen('s-patient');
+  }catch(err){
+    console.error('Fallback hash gagal juga:', err);
   }
 }
 
