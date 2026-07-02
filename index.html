@@ -478,17 +478,24 @@ const KLINIK_LIST = [
 ];
 
   (function forceClinicDropdown(){
-  const select = document.getElementById('f-clinic');
-  if(!select) return;
-
-  select.innerHTML = '<option value="">Pilih klinik</option>';
-
-  KLINIK_LIST.forEach((klinik, index) => {
-    const option = document.createElement('option');
-    option.value = String(index);
-    option.textContent = klinik.nama;
-    select.appendChild(option);
-  });
+  function fill(){
+    const select = document.getElementById('f-clinic');
+    if(!select) return false;
+    select.innerHTML = '<option value="">Pilih klinik</option>';
+    KLINIK_LIST.forEach((klinik, index) => {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = klinik.nama;
+      select.appendChild(option);
+    });
+    return true;
+  }
+  if(!fill()){
+    document.addEventListener('DOMContentLoaded', fill);
+    window.addEventListener('load', fill);
+    setTimeout(fill, 300);
+    setTimeout(fill, 800);
+  }
 })();
 
 /* WatZap: jangan isi API key di file GitHub publik. Biarkan false dulu agar pakai WA manual. Auto WatZap sebaiknya lewat Apps Script/backend. */
@@ -923,7 +930,7 @@ async function resetForm(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function kirimWA(){
+async function kirimWA(){
   if(!window.LAST_DATA || !window.LAST_PREVIEW_URL){
     alert('Generate link dulu ya sebelum kirim.');
     return;
