@@ -414,6 +414,7 @@ textarea.finput{resize:none;line-height:1.6;}
 <button onclick="openPreview()" style="margin-top:10px;width:100%;padding:11px 14px;border:none;border-radius:10px;background:var(--navy);color:#fff;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">👁️ Preview</button>
 <button id="btn-kirim-wa" onclick="kirimWA()" style="margin-top:8px;width:100%;padding:12px 14px;border:none;border-radius:10px;background:var(--red);color:#fff;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">📤 Kirim ke WA Pasien & Klinik</button>
 <p style="font-size:10px;color:var(--text3);margin-top:8px;text-align:center;">Cek lewat Preview dulu, baru klik Kirim.</p>
+<button onclick="resetForm()" style="margin-top:12px;width:100%;padding:12px 14px;border:1.5px solid var(--border2);border-radius:10px;background:var(--white);color:var(--text2);font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font);">🔄 Isi Form Baru</button>
 </div></div></div>
 </div>
 <script>
@@ -866,7 +867,63 @@ function openPreview(){
 }
 
 /* Kirim WA ke pasien & klinik (baru jalan saat tombol Kirim diklik). */
-async function kirimWA(){
+async function resetForm(){
+  if(!confirm('Reset form? Semua data yang belum dikirim akan hilang.')) return;
+  // Reset teks inputs
+  ['f-name','f-age','f-phone','f-doctor','f-date','f-note'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+  // Reset tanggal ke hari ini
+  const dateEl=document.getElementById('f-date');
+  if(dateEl) dateEl.valueAsDate=new Date();
+  // Reset gigi terpilih
+  selTeeth=[];
+  document.querySelectorAll('.tooth-btn.sel').forEach(b=>b.classList.remove('sel'));
+  // Reset brand ke Dentium
+  setBrand('Dentium',BRAND_PRICES[payType]['Dentium'],document.querySelector('#brands .choice-btn'));
+  document.querySelectorAll('#brands .choice-btn').forEach((b,i)=>{b.classList.toggle('on',i===0);});
+  // Reset crown ke Metal Porcelain
+  setCrown('Metal Porcelain',4050000,document.querySelector('#crowns .choice-btn'));
+  document.querySelectorAll('#crowns .choice-btn').forEach((b,i)=>{b.classList.toggle('on',i===0);});
+  // Reset payment ke pribadi
+  setPayment('pribadi');
+  // Reset tindakan tambahan
+  document.getElementById('tambahan-rows').innerHTML=
+    '<div class="tambahan-item" id="tambahan-item-0">'
+    +'<div class="two" style="margin-bottom:0;"><div>'
+    +'<select class="finput" id="tambahan-type-0" onchange="onTambahanChange(0)" style="font-size:12px;">'
+    +'<option value="">Tidak ada</option>'
+    +'<option value="Bone graft Tipe 1|1600000">Bone graft Tipe 1 — Rp 1.600.000</option>'
+    +'<option value="Bone graft Tipe 2|2350000">Bone graft Tipe 2 — Rp 2.350.000</option>'
+    +'<option value="Membran Tipe 1|1600000">Membran Tipe 1 — Rp 1.600.000</option>'
+    +'<option value="Membran Tipe 2|2350000">Membran Tipe 2 — Rp 2.350.000</option>'
+    +'<option value="Membran Tipe 3|2650000">Membran Tipe 3 — Rp 2.650.000</option>'
+    +'<option value="Membran Kompleks|4500000">Membran Kompleks — Rp 4.500.000</option>'
+    +'<option value="Sinus lift|9850000">Sinus lift — Rp 9.850.000</option>'
+    +'<option value="Connective Tissue Graft|4750000">Connective Tissue Graft — Rp 4.750.000</option>'
+    +'<option value="Crown lengthening|1750000">Crown lengthening — Rp 1.750.000</option>'
+    +'<option value="Ridge Split|9000000">Ridge Split — Rp 9.000.000</option>'
+    +'<option value="CBCT|3500000">CBCT — Rp 3.500.000</option>'
+    +'<option value="custom|0">Custom</option>'
+    +'</select></div>'
+    +'<div id="tambahan-custom-wrap-0" style="display:none;">'
+    +'<input class="finput" id="tambahan-custom-price-0" type="number" placeholder="Masukkan harga" oninput="calcTotal()" style="font-size:12px;"/>'
+    +'</div></div></div>';
+  tambahanCount=1;
+  // Reset kualitas tulang
+  document.querySelectorAll('#bone-q .pill').forEach(p=>p.classList.remove('on'));
+  // Sembunyikan link result
+  const lb=document.getElementById('link-result');
+  if(lb) lb.style.display='none';
+  // Reset flags
+  window.LAST_SENT=false;
+  calcTotal();
+  // Scroll ke atas
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function kirimWA(){
   if(!window.LAST_DATA || !window.LAST_PREVIEW_URL){
     alert('Generate link dulu ya sebelum kirim.');
     return;
