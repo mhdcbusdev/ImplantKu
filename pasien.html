@@ -454,7 +454,7 @@ const WATZAP_CONFIG = {
 /* Google Sheets Web App URL — isi setelah Apps Script di-deploy */
 const SHEET_CONFIG = {
   enabled: true,
-  webAppUrl: "https://script.google.com/macros/s/AKfycbypwj1lWA5dNXvP_qa9okZFCa_eBD3RCvn9lL8x2KyVRMcPs7nplm-1kvp5eSMrImojUA/exec"
+  webAppUrl: "https://script.google.com/macros/s/AKfycbxyPc74-O5xc_-CxlrjbNZS1zZV373VUMyzViIRVUofh8tcleYvWuoM92VBIUy9rReA0A/exec"
 };
 
 function getAssessmentSummary(data, url){
@@ -467,51 +467,6 @@ function getAssessmentSummary(data, url){
     penunjangTotal,
     grandTotal: implantTotal
   };
-}
-
-async function saveAssessmentToSheet(data, url){
-  if(!SHEET_CONFIG.enabled || !SHEET_CONFIG.webAppUrl || SHEET_CONFIG.webAppUrl.includes('PASTE_')){
-    return { ok:false, reason:'Google Sheet belum disetting' };
-  }
-
-  const summary = getAssessmentSummary(data, url);
-  const payload = {
-    timestamp: new Date().toISOString(),
-    namaPasien: data.name || '',
-    usia: data.age || '',
-    noHpPasien: data.phone || '',
-    dokter: data.doctor || '',
-    tanggal: data.date || '',
-    klinik: data.clinicName || '',
-    noHpKlinik: data.clinicPhone || '',
-    tipePembayaran: data.payType || '',
-    brandImplant: data.brand || '',
-    hargaImplant: data.implantPrice || 0,
-    crown: data.crownName || '',
-    hargaCrown: data.crownPrice || 0,
-    nomorGigi: (data.teeth || []).join(', '),
-    jumlahGigi: summary.jumlahGigi,
-    kualitasTulang: data.boneQ || '',
-    boneGraft: data.boneGraft ? data.boneGraft.label : '',
-    hargaBoneGraft: data.boneGraft ? data.boneGraft.price : 0,
-    biayaPenunjang: (data.penunjang || []).map(x => `${x.name}: Rp ${Number(x.price||0).toLocaleString('id-ID')}`).join(' | '),
-    totalEstimasi: summary.grandTotal,
-    catatanDokter: data.note || '',
-    linkPasien: url
-  };
-
-  try{
-    const response = await fetch(SHEET_CONFIG.webAppUrl, {
-      method:'POST',
-      mode:'no-cors',
-      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-      body:JSON.stringify(payload)
-    });
-    return { ok:true };
-  }catch(err){
-    console.error('Gagal simpan ke Google Sheet:', err);
-    return { ok:false, reason:err.message };
-  }
 }
 
 
@@ -789,14 +744,14 @@ function buildPatientCost(d){
   // Tindakan Tambahan — tampil jika ada, masuk grand total
   const penSec=document.getElementById('ps-penunjang-section');
   const penList=document.getElementById('ps-penunjang-list');
-  const tambahanAda=tambahan.filter(e=>e.price>0);
-  if(tambahanAda.length>0){
+  if(tambahan.length>0){
     penList.innerHTML='';
-    tambahanAda.forEach(e=>{
-      const pct=grand?Math.round(e.price/grand*100):0;
+    tambahan.forEach(e=>{
+      const pct=(grand && Number(e.price)>0)?Math.round(e.price/grand*100):0;
+      const valLabel=(Number(e.price)>0)?fmt(e.price):'(Akan dirujuk)';
       const row=document.createElement('div');
       row.className='cbrow';
-      row.innerHTML='<span class="cbl">'+e.name+'</span><div class="cbtrack"><div class="cbfill" data-p="'+pct+'"></div></div><span class="cbval">'+fmt(e.price)+'</span>';
+      row.innerHTML='<span class="cbl">'+e.name+'</span><div class="cbtrack"><div class="cbfill" data-p="'+pct+'"></div></div><span class="cbval">'+valLabel+'</span>';
       penList.appendChild(row);
     });
     penSec.style.display='block';
@@ -958,7 +913,6 @@ function generateLink(){
   document.getElementById('link-display').textContent=url;
   document.getElementById('link-result').style.display='block';
   document.getElementById('link-result').scrollIntoView({behavior:'smooth',block:'nearest'});
-  saveAssessmentToSheet(data, url);
   sendAutoWA(data, url);
 }
 
