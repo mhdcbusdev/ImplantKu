@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard CRO — ImplantKu</title>
+<style>
+  :root{
+    --red:#E6323C; --red-dark:#C4262F; --navy:#141E5A;
+    --bg:#F5F6FA; --card:#FFFFFF; --border:#E6E8F0;
+    --text:#1A1A2E; --muted:#6B7280; --green:#16A34A; --amber:#D97706;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;}
+  header{background:var(--navy);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;
+    box-shadow:0 2px 8px rgba(0,0,20,.15);}
+  header h1{margin:0;font-size:16px;font-weight:800;}
+  header .sub{font-size:11px;opacity:.6;margin-top:2px;}
+  .wrap{max-width:720px;margin:0 auto;padding:14px;}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
+  .search{flex:1;min-width:160px;padding:9px 12px;border:1px solid var(--border);
+    border-radius:10px;font-size:14px;outline:none;background:#fff;}
+  .search:focus{border-color:var(--red);}
+  .btn{border:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;
+    cursor:pointer;white-space:nowrap;}
+  .btn-refresh{background:var(--navy);color:#fff;}
+  .toggle{display:flex;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .toggle button{border:none;background:none;padding:9px 12px;font-size:12px;font-weight:700;
+    cursor:pointer;color:var(--muted);}
+  .toggle button.on{background:var(--red);color:#fff;}
+  .count{font-size:12px;color:var(--muted);margin-bottom:10px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:14px;margin-bottom:12px;box-shadow:0 1px 6px rgba(0,0,0,.04);}
+  .card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .name{font-size:15px;font-weight:800;}
+  .meta{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5;}
+  .total{font-size:14px;font-weight:800;color:var(--red);margin-top:8px;}
+  .badge{font-size:10px;font-weight:800;padding:4px 9px;border-radius:20px;white-space:nowrap;}
+  .badge.pending{background:#FEF3C7;color:var(--amber);}
+  .badge.sent{background:#DCFCE7;color:var(--green);}
+  .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+  .actions a,.actions button{flex:1;min-width:130px;text-align:center;text-decoration:none;
+    padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;}
+  .wa{background:#25D366;color:#fff;}
+  .wa.disabled{background:#cbd5e1;pointer-events:none;}
+  .mark{background:#fff;border:1.5px solid var(--green)!important;color:var(--green);}
+  .mark.undo{border-color:var(--muted)!important;color:var(--muted);}
+  .state{text-align:center;padding:40px 16px;color:var(--muted);font-size:14px;}
+  .nohp{font-size:11px;color:var(--red);margin-top:6px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Dashboard CRO — ImplantKu</h1>
+  <div class="sub">Kirim estimasi ke pasien via WhatsApp</div>
+</header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <input id="search" class="search" placeholder="Cari nama / klinik / dokter…">
+    <div class="toggle">
+      <button id="fPending" class="on" onclick="setFilter('pending')">Belum dikirim</button>
+      <button id="fAll" onclick="setFilter('all')">Semua</button>
+    </div>
+    <button class="btn btn-refresh" onclick="loadData()">↻ Refresh</button>
+  </div>
+  <div class="count" id="count"></div>
+  <div id="list"><div class="state">Memuat data…</div></div>
+</div>
+
+<!-- URL Web App diambil dari config.js (satu-satunya tempat menyimpannya) -->
+<script src="config.js"></script>
+<script>
+  const WEB_APP_URL = (window.IMPLANTKU_CONFIG && window.IMPLANTKU_CONFIG.WEB_APP_URL) || "";
+  if(!WEB_APP_URL){
+    document.getElementById('list').innerHTML =
+      '<div class="state">⚠ config.js belum termuat / WEB_APP_URL kosong.<br>Pastikan config.js ada di folder yang sama.</div>';
+  }
+
+  let allData = [];
+  let filter = 'pending';
+
+  function rupiah(n){ return 'Rp ' + (Number(n)||0).toLocaleString('id-ID'); }
+  function isSent(s){ return String(s||'').toLowerCase().startsWith('terkirim'); }
+
+  function setFilter(f){
+    filter = f;
+    document.getElementById('fPending').classList.toggle('on', f==='pending');
+    document.getElementById('fAll').classList.toggle('on', f==='all');
+    render();
+  }
+
+  async function loadData(){
+    document.getElementById('list').innerHTML = '<div class="state">Memuat data…</div>';
+    try{
+      const res = await fetch(WEB_APP_URL + '?action=list');
+      const json = await res.json();
+      allData = (json.data || []);
+      render();
+    }catch(err){
+      document.getElementById('list').innerHTML =
+        '<div class="state">Gagal memuat data.<br>Cek koneksi / URL Web App.<br><small>'+err+'</small></div>';
+    }
+  }
+
+  function render(){
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    let rows = allData.filter(r=>{
+      if(filter==='pending' && isSent(r.statusWA)) return false;
+      if(!q) return true;
+      return (r.namaPasien+' '+r.klinik+' '+r.dokter).toLowerCase().includes(q);
+    });
+
+    document.getElementById('count').textContent =
+      rows.length + ' estimasi' + (filter==='pending' ? ' belum dikirim' : ' ditampilkan');
+
+    if(!rows.length){
+      document.getElementById('list').innerHTML =
+        '<div class="state">Tidak ada data.</div>';
+      return;
+    }
+
+    document.getElementById('list').innerHTML = rows.map(cardHTML).join('');
+  }
+
+  function cardHTML(r){
+    const sent = isSent(r.statusWA);
+    const badge = sent
+      ? '<span class="badge sent">✓ '+esc(r.statusWA)+'</span>'
+      : '<span class="badge pending">Belum dikirim</span>';
+
+    const waBtn = r.waPasienLink
+      ? '<a class="wa" href="'+esc(r.waPasienLink)+'" target="_blank" onclick="afterOpen('+r.row+')">📱 Kirim ke Pasien</a>'
+      : '<a class="wa disabled">No HP kosong</a>';
+
+    const markBtn = sent
+      ? '<button class="mark undo" onclick="mark('+r.row+',\'markPending\')">↺ Batalkan</button>'
+      : '<button class="mark" onclick="mark('+r.row+',\'markSent\')">✓ Tandai Terkirim</button>';
+
+    return (
+      '<div class="card" id="row-'+r.row+'">'+
+        '<div class="top">'+
+          '<div>'+
+            '<div class="name">'+esc(r.namaPasien)+'</div>'+
+            '<div class="meta">'+
+              '🏥 '+esc(r.klinik||'-')+' &middot; 🩺 '+esc(r.dokter||'-')+'<br>'+
+              '📱 '+esc(r.noHp||'-')+' &middot; 🦷 '+esc(r.jumlahGigi||'-')+' gigi<br>'+
+              '🕐 '+esc(r.timestamp||'')+
+            '</div>'+
+          '</div>'+ badge +
+        '</div>'+
+        '<div class="total">'+rupiah(r.grandTotal)+'</div>'+
+        (r.waPasienLink ? '' : '<div class="nohp">⚠ Nomor HP pasien kosong — tidak bisa kirim WA.</div>')+
+        '<div class="actions">'+ waBtn + markBtn +'</div>'+
+      '</div>'
+    );
+  }
+
+  // Setelah CRO klik "Kirim", tunggu 1.5 detik lalu tawarkan tandai terkirim
+  function afterOpen(row){
+    setTimeout(function(){
+      const el = document.getElementById('row-'+row);
+      if(el && !isSent((allData.find(x=>x.row===row)||{}).statusWA)){
+        if(confirm('Sudah dikirim ke pasien? Tandai sebagai TERKIRIM?')){
+          mark(row,'markSent');
+        }
+      }
+    }, 1500);
+  }
+
+  async function mark(row, action){
+    try{
+      const res = await fetch(WEB_APP_URL + '?action='+action+'&row='+row);
+      const json = await res.json();
+      if(json.status==='success'){
+        const item = allData.find(x=>x.row===row);
+        if(item) item.statusWA = json.statusWA;
+        render();
+      }else{
+        alert('Gagal update status: '+(json.message||''));
+      }
+    }catch(err){
+      alert('Gagal update status: '+err);
+    }
+  }
+
+  function esc(s){ return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  document.getElementById('search').addEventListener('input', render);
+  loadData();
+</script>
+</body>
+</html>
