@@ -2,194 +2,279 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dashboard CRO — ImplantKu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Dashboard ImplantKu — CRO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --red:#E6323C; --red-dark:#C4262F; --navy:#141E5A;
-    --bg:#F5F6FA; --card:#FFFFFF; --border:#E6E8F0;
-    --text:#1A1A2E; --muted:#6B7280; --green:#16A34A; --amber:#D97706;
-  }
-  *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:var(--text);
-    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;}
-  header{background:var(--navy);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;
-    box-shadow:0 2px 8px rgba(0,0,20,.15);}
-  header h1{margin:0;font-size:16px;font-weight:800;}
-  header .sub{font-size:11px;opacity:.6;margin-top:2px;}
-  .wrap{max-width:720px;margin:0 auto;padding:14px;}
-  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
-  .search{flex:1;min-width:160px;padding:9px 12px;border:1px solid var(--border);
-    border-radius:10px;font-size:14px;outline:none;background:#fff;}
-  .search:focus{border-color:var(--red);}
-  .btn{border:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;
-    cursor:pointer;white-space:nowrap;}
-  .btn-refresh{background:var(--navy);color:#fff;}
-  .toggle{display:flex;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
-  .toggle button{border:none;background:none;padding:9px 12px;font-size:12px;font-weight:700;
-    cursor:pointer;color:var(--muted);}
-  .toggle button.on{background:var(--red);color:#fff;}
-  .count{font-size:12px;color:var(--muted);margin-bottom:10px;}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;
-    padding:14px;margin-bottom:12px;box-shadow:0 1px 6px rgba(0,0,0,.04);}
-  .card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
-  .name{font-size:15px;font-weight:800;}
-  .meta{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5;}
-  .total{font-size:14px;font-weight:800;color:var(--red);margin-top:8px;}
-  .badge{font-size:10px;font-weight:800;padding:4px 9px;border-radius:20px;white-space:nowrap;}
-  .badge.pending{background:#FEF3C7;color:var(--amber);}
-  .badge.sent{background:#DCFCE7;color:var(--green);}
-  .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
-  .actions a,.actions button{flex:1;min-width:130px;text-align:center;text-decoration:none;
-    padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;}
-  .wa{background:#25D366;color:#fff;}
-  .wa.disabled{background:#cbd5e1;pointer-events:none;}
-  .mark{background:#fff;border:1.5px solid var(--green)!important;color:var(--green);}
-  .mark.undo{border-color:var(--muted)!important;color:var(--muted);}
-  .state{text-align:center;padding:40px 16px;color:var(--muted);font-size:14px;}
-  .nohp{font-size:11px;color:var(--red);margin-top:6px;}
+:root{
+  --red:#E43127; --red-dark:#B7241C; --red-soft:#FFEDE9;
+  --navy:#1D3A63; --navy-soft:#5C7395;
+  --cream:#FFF6EF; --card:#fff;
+  --mint:#17B3A3; --mint-soft:#E8F8F6; --yellow:#FFC72C;
+  --line:#F2DFD4; --line-strong:#E4C7B8;
+  --shadow:0 1px 2px rgba(29,58,99,.05), 0 8px 24px -12px rgba(29,58,99,.18);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--cream);color:var(--navy);
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+  font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+h1,h2{font-family:'Baloo 2',sans-serif;font-weight:800;letter-spacing:-.01em;margin:0}
+
+.topbar{position:sticky;top:0;z-index:20;background:var(--red);color:#fff;padding:14px 18px;
+  box-shadow:0 6px 18px -10px rgba(180,36,28,.7)}
+.topbar-inner{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.topbar h1{font-size:22px;line-height:1.1}
+.topbar .sub{font-size:12.5px;opacity:.9;font-weight:500}
+.form-switch{margin-left:auto;background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.4);
+  border-radius:999px;padding:8px 32px 8px 14px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;
+  appearance:none;-webkit-appearance:none;max-width:240px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23ffffff' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 13px center}
+.form-switch:hover{background:rgba(255,255,255,.28)}
+.form-switch:focus{outline:none;box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+.form-switch option{color:#333;background:#fff;font-weight:600}
+
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.notice.err{background:#FFE9E7;border:1px solid var(--red);border-left:5px solid var(--red);
+  color:var(--red-dark);border-radius:10px;padding:13px 15px;font-size:13.5px;margin-bottom:18px;font-weight:600}
+.notice.err code{background:rgba(29,58,99,.08);padding:1px 5px;border-radius:4px;font-size:12.5px}
+
+.cari-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input[type=search]{flex:1;min-width:200px;padding:12px 13px;font:inherit;font-size:15px;
+  color:var(--navy);background:#FFFDFB;border:1.5px solid var(--line-strong);border-radius:10px}
+input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(228,49,39,.14)}
+
+.btn{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:15px;border:none;border-radius:11px;
+  padding:12px 22px;cursor:pointer;transition:.15s;text-decoration:none;display:inline-block;text-align:center}
+.btn.primary{background:var(--red);color:#fff}
+.btn.primary:hover{background:var(--red-dark)}
+.btn.kecil{font-size:13.5px;padding:9px 15px;border-radius:9px}
+.btn.ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line-strong)}
+.btn.ghost:hover{border-color:var(--navy-soft)}
+.btn.hijau{background:var(--mint);color:#fff}
+.btn.hijau:hover{background:#0E9E90}
+.btn.mati{background:#D9C7BE !important;color:#fff;cursor:not-allowed}
+
+.seg{display:inline-flex;border:1.5px solid var(--line-strong);border-radius:10px;overflow:hidden;background:#fff}
+.seg button{border:none;background:#fff;color:var(--navy-soft);font:inherit;font-weight:700;font-size:13px;
+  padding:9px 15px;cursor:pointer}
+.seg button.on{background:var(--red);color:#fff}
+
+.hitung{font-size:13px;font-weight:700;color:var(--navy);background:var(--mint-soft);
+  border:1px solid #BFEDE7;border-radius:9px;padding:8px 12px;margin-bottom:12px;display:none}
+.hitung.tampil{display:block}
+
+.hasil{display:flex;flex-direction:column;gap:10px}
+.item{border:1.5px solid var(--line-strong);border-radius:12px;padding:14px;background:#FFFDFB}
+.item.terkirim{border-color:var(--mint);background:var(--mint-soft)}
+.item .nm{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:18px;line-height:1.2}
+.item .meta{font-size:13px;color:var(--navy-soft);margin-top:3px}
+.item .meta b{color:var(--navy);font-weight:600}
+.item .total{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:17px;color:var(--red);margin-top:8px}
+.tag{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+.tag.pending{color:var(--red-dark);background:var(--red-soft)}
+.tag.sent{color:#0E7A70;background:var(--mint-soft);border:1px solid #BFEDE7}
+.item .aksi{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.kabar{font-size:12.5px;font-weight:700;color:#0E7A70;margin-top:9px;display:none}
+.kabar.tampil{display:block}
+.kabar.gagal{color:var(--red-dark)}
+.kosong{text-align:center;color:var(--navy-soft);font-size:14px;padding:26px 10px}
+.nohp{font-size:12px;color:var(--red-dark);font-weight:600;margin-top:6px}
+.hide{display:none !important}
 </style>
 </head>
 <body>
-<header>
-  <h1>Dashboard CRO — ImplantKu</h1>
-  <div class="sub">Kirim estimasi ke pasien via WhatsApp</div>
-</header>
 
-<div class="wrap">
-  <div class="toolbar">
-    <input id="search" class="search" placeholder="Cari nama / klinik / dokter…">
-    <div class="toggle">
-      <button id="fPending" class="on" onclick="setFilter('pending')">Belum dikirim</button>
-      <button id="fAll" onclick="setFilter('all')">Semua</button>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div>
+      <h1>Dashboard ImplantKu</h1>
+      <div class="sub">Untuk CRO — kirim estimasi implan ke pasien</div>
     </div>
-    <button class="btn btn-refresh" onclick="loadData()">↻ Refresh</button>
+    <select class="form-switch" onchange="if(this.value)location.href=this.value" aria-label="Pindah halaman">
+      <option value="https://mhdcbusdev.github.io/ImplantKu/cro-dashboard.html" selected>Dashboard ImplantKu &mdash; CRO</option>
+      <option value="https://mhdcbusdev.github.io/Rapor-Gigi-Anak/cari.html">Cari Rapor Anak &mdash; Klinik</option>
+      <option value="https://mhdcbusdev.github.io/Rapor-gigi-anak-for-event/cari.html">Cari Rapor Anak &mdash; Event</option>
+      <option value="https://mhdcbusdev.github.io/Rapor-Gigi-Dewasa/cari.html">Cari Rapor Dewasa</option>
+    </select>
   </div>
-  <div class="count" id="count"></div>
-  <div id="list"><div class="state">Memuat data…</div></div>
 </div>
 
-<!-- URL Web App diambil dari config.js (satu-satunya tempat menyimpannya) -->
+<div class="wrap">
+
+  <div class="notice err hide" id="cfgWarn">
+    <b>Belum bisa dipakai.</b> File <code>config.js</code> belum termuat / <code>WEB_APP_URL</code> kosong.
+    Pastikan config.js ada di folder yang sama.
+  </div>
+
+  <div class="card">
+    <div class="cari-row" style="margin-bottom:12px">
+      <input type="search" id="q" placeholder="Cari nama / klinik / dokter…" autocomplete="off">
+      <button class="btn ghost kecil" id="btnRefresh">&#8635; Muat ulang</button>
+    </div>
+    <div class="seg" role="group" aria-label="Filter status">
+      <button id="fPending" class="on" type="button">Belum dikirim</button>
+      <button id="fAll" type="button">Semua</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hitung" id="hitung"></div>
+    <div class="hasil" id="hasil"><div class="kosong">Memuat data…</div></div>
+  </div>
+
+</div>
+
 <script src="config.js"></script>
 <script>
-  const WEB_APP_URL = (window.IMPLANTKU_CONFIG && window.IMPLANTKU_CONFIG.WEB_APP_URL) || "";
-  if(!WEB_APP_URL){
-    document.getElementById('list').innerHTML =
-      '<div class="state">⚠ config.js belum termuat / WEB_APP_URL kosong.<br>Pastikan config.js ada di folder yang sama.</div>';
-  }
+const WEB_APP_URL = (window.IMPLANTKU_CONFIG && window.IMPLANTKU_CONFIG.WEB_APP_URL) || "";
 
-  let allData = [];
-  let filter = 'pending';
+const $ = (s,r=document)=>r.querySelector(s);
+function el(tag,cls,teks){const n=document.createElement(tag);if(cls)n.className=cls;if(teks!==undefined)n.textContent=teks;return n;}
+function rupiah(n){ return 'Rp ' + (Number(n)||0).toLocaleString('id-ID'); }
+function isSent(s){ return String(s||'').toLowerCase().startsWith('terkirim'); }
 
-  function rupiah(n){ return 'Rp ' + (Number(n)||0).toLocaleString('id-ID'); }
-  function isSent(s){ return String(s||'').toLowerCase().startsWith('terkirim'); }
+let allData = [];
+let filter = 'pending';
 
-  function setFilter(f){
-    filter = f;
-    document.getElementById('fPending').classList.toggle('on', f==='pending');
-    document.getElementById('fAll').classList.toggle('on', f==='all');
+if(!WEB_APP_URL){ $("#cfgWarn").classList.remove("hide"); }
+
+function setFilter(f){
+  filter = f;
+  $("#fPending").classList.toggle('on', f==='pending');
+  $("#fAll").classList.toggle('on', f==='all');
+  render();
+}
+$("#fPending").addEventListener('click',()=>setFilter('pending'));
+$("#fAll").addEventListener('click',()=>setFilter('all'));
+$("#btnRefresh").addEventListener('click',loadData);
+$("#q").addEventListener('input',render);
+
+async function loadData(){
+  $("#hasil").innerHTML = '<div class="kosong">Memuat data…</div>';
+  if(!WEB_APP_URL) return;
+  try{
+    const res = await fetch(WEB_APP_URL + '?action=list');
+    const json = await res.json();
+    allData = (json.data || []);
     render();
+  }catch(err){
+    $("#hasil").innerHTML = '<div class="kosong">Gagal memuat data. Cek koneksi / URL Web App.<br><small>'+err+'</small></div>';
   }
+}
 
-  async function loadData(){
-    document.getElementById('list').innerHTML = '<div class="state">Memuat data…</div>';
-    try{
-      const res = await fetch(WEB_APP_URL + '?action=list');
-      const json = await res.json();
-      allData = (json.data || []);
-      render();
-    }catch(err){
-      document.getElementById('list').innerHTML =
-        '<div class="state">Gagal memuat data.<br>Cek koneksi / URL Web App.<br><small>'+err+'</small></div>';
-    }
-  }
+function updateHitung(n){
+  const h = $("#hitung");
+  h.classList.add("tampil");
+  h.textContent = n + ' estimasi' + (filter==='pending' ? ' belum dikirim' : ' ditampilkan');
+}
 
-  function render(){
-    const q = document.getElementById('search').value.trim().toLowerCase();
-    let rows = allData.filter(r=>{
-      if(filter==='pending' && isSent(r.statusWA)) return false;
-      if(!q) return true;
-      return (r.namaPasien+' '+r.klinik+' '+r.dokter).toLowerCase().includes(q);
+function render(){
+  const q = $("#q").value.trim().toLowerCase();
+  const rows = allData.filter(r=>{
+    if(filter==='pending' && isSent(r.statusWA)) return false;
+    if(!q) return true;
+    return (r.namaPasien+' '+r.klinik+' '+r.dokter).toLowerCase().includes(q);
+  });
+
+  updateHitung(rows.length);
+  const box = $("#hasil");
+  box.innerHTML = "";
+
+  if(!rows.length){ box.appendChild(el("div","kosong","Tidak ada data.")); return; }
+  rows.forEach(r=>box.appendChild(cardEl(r)));
+}
+
+function pesanDariLink(waLink){
+  const i = String(waLink||"").indexOf("?text=");
+  if(i<0) return "";
+  try{ return decodeURIComponent(waLink.slice(i+6)); }catch(e){ return ""; }
+}
+
+function cardEl(r){
+  const sent = isSent(r.statusWA);
+  const it = el("div","item"+(sent?" terkirim":""));
+  it.id = "row-"+r.row;
+
+  const nm = el("div","nm", r.namaPasien || "Pasien");
+  nm.appendChild(el("span","tag "+(sent?"sent":"pending"), sent ? "Terkirim" : "Belum dikirim"));
+  it.appendChild(nm);
+
+  const m1 = el("div","meta");
+  if(r.klinik){ m1.append(el("b",null,r.klinik)); }
+  if(r.dokter){ m1.append(document.createTextNode(r.klinik?" · dr. ":"dr. "), el("b",null,r.dokter)); }
+  it.appendChild(m1);
+
+  const m2 = el("div","meta");
+  m2.append(document.createTextNode("HP "), el("b",null, r.noHp || "-"),
+            document.createTextNode(" · "), el("b",null,(r.jumlahGigi||"-")+" gigi"));
+  it.appendChild(m2);
+
+  if(r.timestamp){ it.appendChild(el("div","meta", r.timestamp)); }
+  it.appendChild(el("div","total", rupiah(r.grandTotal)));
+  if(!r.waPasienLink){ it.appendChild(el("div","nohp","Nomor HP pasien kosong — tidak bisa kirim WA.")); }
+
+  const aksi = el("div","aksi");
+  const kabar = el("div","kabar");
+
+  const kirim = el("a","btn hijau kecil","Kirim via WhatsApp");
+  kirim.target="_blank"; kirim.rel="noopener";
+  if(r.waPasienLink){
+    kirim.href = r.waPasienLink;
+    kirim.addEventListener("click",()=>{
+      kabar.textContent = "WhatsApp dibuka — tekan Kirim di WA ke "+(r.noHp||"pasien");
+      kabar.classList.remove("gagal"); kabar.classList.add("tampil");
+      setTimeout(()=>{ if(!isSent((allData.find(x=>x.row===r.row)||{}).statusWA)){
+        if(confirm("Sudah dikirim ke pasien? Tandai TERKIRIM?")) mark(r.row,"markSent");
+      }}, 1500);
     });
-
-    document.getElementById('count').textContent =
-      rows.length + ' estimasi' + (filter==='pending' ? ' belum dikirim' : ' ditampilkan');
-
-    if(!rows.length){
-      document.getElementById('list').innerHTML =
-        '<div class="state">Tidak ada data.</div>';
-      return;
-    }
-
-    document.getElementById('list').innerHTML = rows.map(cardHTML).join('');
+  }else{
+    kirim.classList.add("mati"); kirim.href="#";
+    kirim.addEventListener("click",e=>{ e.preventDefault();
+      kabar.textContent="Nomor HP kosong. Pakai \u201CSalin pesan\u201D lalu tempel manual di WA.";
+      kabar.classList.add("tampil","gagal"); });
   }
+  aksi.appendChild(kirim);
 
-  function cardHTML(r){
-    const sent = isSent(r.statusWA);
-    const badge = sent
-      ? '<span class="badge sent">✓ '+esc(r.statusWA)+'</span>'
-      : '<span class="badge pending">Belum dikirim</span>';
+  const markBtn = el("button","btn "+(sent?"ghost":"primary")+" kecil", sent ? "Batalkan" : "Tandai Terkirim");
+  markBtn.type="button";
+  markBtn.addEventListener("click",()=>mark(r.row, sent ? "markPending" : "markSent"));
+  aksi.appendChild(markBtn);
 
-    const waBtn = r.waPasienLink
-      ? '<a class="wa" href="'+esc(r.waPasienLink)+'" target="_blank" onclick="afterOpen('+r.row+')">📱 Kirim ke Pasien</a>'
-      : '<a class="wa disabled">No HP kosong</a>';
+  const salin = el("button","btn ghost kecil","Salin pesan");
+  salin.type="button";
+  salin.addEventListener("click",async()=>{
+    const teks = pesanDariLink(r.waPasienLink);
+    try{ await navigator.clipboard.writeText(teks); salin.textContent="Pesan tersalin"; }
+    catch(e){ salin.textContent="Gagal menyalin"; }
+    setTimeout(()=>salin.textContent="Salin pesan",2000);
+  });
+  aksi.appendChild(salin);
 
-    const markBtn = sent
-      ? '<button class="mark undo" onclick="mark('+r.row+',\'markPending\')">↺ Batalkan</button>'
-      : '<button class="mark" onclick="mark('+r.row+',\'markSent\')">✓ Tandai Terkirim</button>';
+  it.appendChild(aksi);
+  it.appendChild(kabar);
+  return it;
+}
 
-    return (
-      '<div class="card" id="row-'+r.row+'">'+
-        '<div class="top">'+
-          '<div>'+
-            '<div class="name">'+esc(r.namaPasien)+'</div>'+
-            '<div class="meta">'+
-              '🏥 '+esc(r.klinik||'-')+' &middot; 🩺 '+esc(r.dokter||'-')+'<br>'+
-              '📱 '+esc(r.noHp||'-')+' &middot; 🦷 '+esc(r.jumlahGigi||'-')+' gigi<br>'+
-              '🕐 '+esc(r.timestamp||'')+
-            '</div>'+
-          '</div>'+ badge +
-        '</div>'+
-        '<div class="total">'+rupiah(r.grandTotal)+'</div>'+
-        (r.waPasienLink ? '' : '<div class="nohp">⚠ Nomor HP pasien kosong — tidak bisa kirim WA.</div>')+
-        '<div class="actions">'+ waBtn + markBtn +'</div>'+
-      '</div>'
-    );
-  }
+async function mark(row, action){
+  try{
+    const res = await fetch(WEB_APP_URL + '?action='+action+'&row='+row);
+    const json = await res.json();
+    if(json.status==='success'){
+      const item = allData.find(x=>x.row===row);
+      if(item) item.statusWA = json.statusWA;
+      render();
+    }else{ alert('Gagal update status: '+(json.message||'')); }
+  }catch(err){ alert('Gagal update status: '+err); }
+}
 
-  // Setelah CRO klik "Kirim", tunggu 1.5 detik lalu tawarkan tandai terkirim
-  function afterOpen(row){
-    setTimeout(function(){
-      const el = document.getElementById('row-'+row);
-      if(el && !isSent((allData.find(x=>x.row===row)||{}).statusWA)){
-        if(confirm('Sudah dikirim ke pasien? Tandai sebagai TERKIRIM?')){
-          mark(row,'markSent');
-        }
-      }
-    }, 1500);
-  }
-
-  async function mark(row, action){
-    try{
-      const res = await fetch(WEB_APP_URL + '?action='+action+'&row='+row);
-      const json = await res.json();
-      if(json.status==='success'){
-        const item = allData.find(x=>x.row===row);
-        if(item) item.statusWA = json.statusWA;
-        render();
-      }else{
-        alert('Gagal update status: '+(json.message||''));
-      }
-    }catch(err){
-      alert('Gagal update status: '+err);
-    }
-  }
-
-  function esc(s){ return String(s==null?'':s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-  document.getElementById('search').addEventListener('input', render);
-  loadData();
+loadData();
 </script>
 </body>
 </html>
