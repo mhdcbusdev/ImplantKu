@@ -412,8 +412,8 @@ textarea.finput{resize:none;line-height:1.6;}
 </div>
 <div class="link-url" id="link-display"></div>
 <button onclick="openPreview()" style="margin-top:10px;width:100%;padding:11px 14px;border:none;border-radius:10px;background:var(--navy);color:#fff;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">👁️ Preview</button>
-<button id="btn-kirim-wa" onclick="kirimWA()" style="margin-top:8px;width:100%;padding:12px 14px;border:none;border-radius:10px;background:var(--red);color:#fff;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">✅ Kirim ke Tim (Klinik & CRO)</button>
-<p style="font-size:10px;color:var(--text3);margin-top:8px;text-align:center;">Cek lewat Preview dulu, lalu klik Kirim ke Tim.</p>
+<button id="btn-kirim-wa" onclick="kirimWA()" style="margin-top:8px;width:100%;padding:12px 14px;border:none;border-radius:10px;background:var(--red);color:#fff;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">✅ Kirim ke Pasien & Klinik</button>
+<p style="font-size:10px;color:var(--text3);margin-top:8px;text-align:center;">Cek lewat Preview dulu, lalu klik Kirim — WA otomatis ke pasien &amp; klinik.</p>
 <button onclick="resetForm()" style="margin-top:12px;width:100%;padding:12px 14px;border:1.5px solid var(--border2);border-radius:10px;background:var(--white);color:var(--text2);font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font);">🔄 Isi Form Baru</button>
 </div></div></div>
 </div>
@@ -862,7 +862,7 @@ function generateLink(){
 
   // CATATAN: WA TIDAK dikirim di sini. Pengiriman hanya saat tombol "Kirim ke WA" diklik.
   var _kirim = document.getElementById('btn-kirim-wa');
-  if(_kirim){ _kirim.disabled = false; _kirim.textContent = '✅ Kirim ke Tim (Klinik & CRO)'; }
+  if(_kirim){ _kirim.disabled = false; _kirim.textContent = '✅ Kirim ke Pasien & Klinik'; }
 }
 
 /* Buka preview halaman pasien di tab baru, pakai data yang baru diisi (format #). */
@@ -944,10 +944,10 @@ async function kirimWA(){
   try{
     await saveAssessmentToSheet(window.LAST_DATA, window.LAST_PREVIEW_URL);
     window.LAST_SENT = true;
-    if(btn){ btn.textContent = '✅ Terkirim ke Tim'; }
-    alert('Estimasi tersimpan.\n\nNotifikasi otomatis dikirim ke klinik & CRO. Tim CRO yang akan meneruskan link estimasi ke pasien.');
+    if(btn){ btn.textContent = '✅ Terkirim'; }
+    alert('Estimasi tersimpan ✅\n\nLink estimasi dikirim otomatis ke WhatsApp pasien & klinik dalam beberapa detik.\n\nKalau belum masuk dalam 5 menit, hubungi BD Support (085171087351).');
   }catch(err){
-    if(btn){ btn.disabled = false; btn.textContent = '✅ Kirim ke Tim (Klinik & CRO)'; }
+    if(btn){ btn.disabled = false; btn.textContent = '✅ Kirim ke Pasien & Klinik'; }
     alert('Gagal mengirim: '+(err && err.message ? err.message : err));
   }
 }
