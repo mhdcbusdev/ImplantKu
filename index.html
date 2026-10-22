@@ -408,12 +408,12 @@ textarea.finput{resize:none;line-height:1.6;}
 </div><button class="btn-generate" onclick="generateLink()">✦ Generate Link Pasien</button><div class="link-box" id="link-result" style="display:none;">
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
   <div style="width:30px;height:30px;border-radius:50%;background:var(--red-light);border:.5px solid var(--red-border);display:flex;align-items:center;justify-content:center;color:var(--red);font-weight:800;flex-shrink:0;">✓</div>
-  <div><p style="font-size:13px;font-weight:800;color:var(--text);">Link estimasi pasien</p><p style="font-size:10px;color:var(--text3);margin-top:1px;">Link ini akan diteruskan ke pasien oleh tim CRO</p></div>
+  <div><p style="font-size:13px;font-weight:800;color:var(--text);">Link estimasi pasien</p><p style="font-size:10px;color:var(--text3);margin-top:1px;">Klik Kirim → link otomatis terkirim ke WA pasien &amp; klinik</p></div>
 </div>
 <div class="link-url" id="link-display"></div>
 <button onclick="openPreview()" style="margin-top:10px;width:100%;padding:11px 14px;border:none;border-radius:10px;background:var(--navy);color:#fff;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">👁️ Preview</button>
 <button id="btn-kirim-wa" onclick="kirimWA()" style="margin-top:8px;width:100%;padding:12px 14px;border:none;border-radius:10px;background:var(--red);color:#fff;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">✅ Kirim ke Pasien & Klinik</button>
-<p style="font-size:10px;color:var(--text3);margin-top:8px;text-align:center;">Cek lewat Preview dulu, lalu klik Kirim — WA otomatis ke pasien &amp; klinik.</p>
+<p style="font-size:10px;color:var(--text3);margin-top:8px;text-align:center;">Cek lewat Preview dulu, pastikan No HP pasien benar, lalu klik Kirim.</p>
 <button onclick="resetForm()" style="margin-top:12px;width:100%;padding:12px 14px;border:1.5px solid var(--border2);border-radius:10px;background:var(--white);color:var(--text2);font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font);">🔄 Isi Form Baru</button>
 </div></div></div>
 </div>
@@ -498,7 +498,7 @@ const KLINIK_LIST = [
   }
 })();
 
-/* WatZap: jangan isi API key di file GitHub publik. Biarkan false dulu agar pakai WA manual. Auto WatZap sebaiknya lewat Apps Script/backend. */
+/* WatZap TIDAK DIPAKAI lagi. WA otomatis sekarang lewat Apps Script -> n8n -> WAHA (nomor CRO). */
 const WATZAP_CONFIG = {
   enabled: false,
   apiUrl: "PASTE_WATZAP_API_URL_DI_SINI",
@@ -944,8 +944,8 @@ async function kirimWA(){
   try{
     await saveAssessmentToSheet(window.LAST_DATA, window.LAST_PREVIEW_URL);
     window.LAST_SENT = true;
-    if(btn){ btn.textContent = '✅ Terkirim'; }
-    alert('Estimasi tersimpan ✅\n\nLink estimasi dikirim otomatis ke WhatsApp pasien & klinik dalam beberapa detik.\n\nKalau belum masuk dalam 5 menit, hubungi BD Support (085171087351).');
+    if(btn){ btn.textContent = '✅ Terkirim ke Pasien & Klinik'; }
+    alert('✅ Estimasi tersimpan & dikirim otomatis ke WA pasien dan klinik.\n\nCek WA klinik: ada pesan "[Estimasi ImplantKu] ✅" = berhasil.\n\nBelum masuk dalam 5 menit? Hubungi BD Support 0851-7108-7351.');
   }catch(err){
     if(btn){ btn.disabled = false; btn.textContent = '✅ Kirim ke Pasien & Klinik'; }
     alert('Gagal mengirim: '+(err && err.message ? err.message : err));
