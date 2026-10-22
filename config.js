@@ -7,7 +7,7 @@
    ========================================================= */
 window.IMPLANTKU_CONFIG = {
   // URL Web App Apps Script (Deploy > Manage deployments)
-  WEB_APP_URL: "https://script.google.com/macros/s/AKfycbznF2aHmlwOd_AzE-ycmEWCsC5Tlkj2eHR2_vLgwfazntK7Q17GejPT7gMyXOKpYs-hcQ/exec",
+  WEB_APP_URL: "https://script.google.com/macros/s/AKfycbwYGB28KL6ZhgsOeowanwwtFS_zQZmoqGbs9VtxJvCqDEZn_r894dLVW8lkSCCrurEovg/exec",
 
   // Base link halaman pasien (biasanya tidak berubah)
   BASE_URL: "https://mhdcbusdev.github.io/ImplantKu/pasien.html",
